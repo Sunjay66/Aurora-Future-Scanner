@@ -1,3 +1,10 @@
+name: Aurora Futures OI Tracker
+
+"on":
+  workflow_dispatch:
+  schedule:
+    - cron: "30 13 * * 1-5"
+
 permissions:
   contents: write
 
@@ -17,4 +24,5 @@ jobs:
       - name: Confirm workflow is running
         run: |
           echo "Aurora Futures OI Tracker workflow started."
+          echo "Scheduled refresh: 7:00 PM IST, Monday to Friday"
           date -u
