@@ -21,8 +21,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Confirm workflow is running
+      - name: Install dependencies
         run: |
-          echo "Aurora Futures OI Tracker workflow started."
-          echo "Scheduled refresh: 7:00 PM IST, Monday to Friday"
-          date -u
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Aurora OI Tracker
+        run: |
+          python scripts/update_oi_tracker.py
