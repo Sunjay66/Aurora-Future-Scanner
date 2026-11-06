@@ -399,7 +399,19 @@ function selectCategory(category) {
 
     renderTable();
 }
+let sortKey = "";
+let sortDirection = -1;
 
+function sortTable(key) {
+    if (sortKey === key) {
+        sortDirection *= -1;
+    } else {
+        sortKey = key;
+        sortDirection = -1;
+    }
+
+    renderTable();
+}
 function renderTable() {
     const search = document.getElementById("search")
         .value.toUpperCase();
@@ -413,7 +425,30 @@ function renderTable() {
             row => row.Classification === selectedCategory
         );
     }
+if (sortKey) {
+    filtered.sort((a, b) => {
+        const valueA = a[sortKey] ?? "";
+        const valueB = b[sortKey] ?? "";
 
+        const numericKeys = [
+            "Close_Price",
+            "Price_Change_Pct",
+            "Open_Interest",
+            "OI_Change_Pct",
+            "Volume"
+        ];
+
+        let comparison;
+
+        if (numericKeys.includes(sortKey)) {
+            comparison = (Number(valueA) || 0) - (Number(valueB) || 0);
+        } else {
+            comparison = String(valueA).localeCompare(String(valueB));
+        }
+
+        return comparison * sortDirection;
+    });
+}
     const body = document.getElementById("tableBody");
     body.innerHTML = "";
 
