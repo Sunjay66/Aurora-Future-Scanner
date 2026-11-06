@@ -4,6 +4,9 @@
 # ============================================================
 
 from pathlib import Path
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 import pandas as pd
 
 DATA_DIR = Path("data")
@@ -37,6 +40,10 @@ def classify_futures():
     if missing:
         raise ValueError(f"Missing columns: {missing}")
 
+    # --------------------------------------------------------
+    # Clean current snapshot
+    # --------------------------------------------------------
+
     current["Trade_Date"] = pd.to_datetime(
         current["Trade_Date"], errors="coerce"
     )
@@ -60,7 +67,23 @@ def classify_futures():
 
     date_string = current_date.strftime("%Y-%m-%d")
 
-    # Save a permanent snapshot if not already present
+    # Refresh timestamp
+    if (
+        "Refresh_Time_IST" in current.columns
+        and current["Refresh_Time_IST"].notna().any()
+    ):
+        refresh_time = str(
+            current["Refresh_Time_IST"].dropna().iloc[0]
+        )
+    else:
+        refresh_time = datetime.now(
+            ZoneInfo("Asia/Kolkata")
+        ).strftime("%Y-%m-%d %H:%M:%S IST")
+
+    # --------------------------------------------------------
+    # Save current daily snapshot
+    # --------------------------------------------------------
+
     snapshot_file = HISTORY_DIR / f"snapshot_{date_string}.csv"
 
     if not snapshot_file.exists():
@@ -69,21 +92,21 @@ def classify_futures():
     else:
         print("Daily snapshot already exists:", snapshot_file.name)
 
-    # Find the immediately previous available trading snapshot
-    previous_files = sorted(
-        HISTORY_DIR.glob("snapshot_*.csv")
-    )
+    # --------------------------------------------------------
+    # Find the most recent earlier trading snapshot
+    # --------------------------------------------------------
+
+    previous_files = sorted(HISTORY_DIR.glob("snapshot_*.csv"))
 
     previous_files = [
         f for f in previous_files
         if f.name != snapshot_file.name
+        and f.stem.replace("snapshot_", "") < date_string
     ]
 
     if not previous_files:
-        print(
-            "No previous trading snapshot available. "
-            "Classification cannot yet be calculated."
-        )
+        print("No previous trading snapshot available.")
+        print("Classification cannot yet be calculated.")
         return
 
     previous_file = previous_files[-1]
@@ -108,21 +131,32 @@ def classify_futures():
 
     previous_date = previous["Trade_Date"].max()
 
+    if pd.isna(previous_date):
+        raise ValueError("Invalid Trade_Date in previous snapshot.")
+
+    previous_date_string = previous_date.strftime("%Y-%m-%d")
+
     print("Current date:", date_string)
-    print("Previous snapshot:", previous_date.strftime("%Y-%m-%d"))
+    print("Previous date:", previous_date_string)
 
-    # First trading day of a new calendar month:
-    # do not compare with the previous month.
-    if current_date.month != previous_date.month or \
-       current_date.year != previous_date.year:
+    # --------------------------------------------------------
+    # Monthly reset
+    # --------------------------------------------------------
 
+    if (
+        current_date.month != previous_date.month
+        or current_date.year != previous_date.year
+    ):
         print(
             "Monthly reset: previous snapshot belongs to "
             "a different month. Classification skipped."
         )
         return
 
-    # Compare the same symbol and exact expiry
+    # --------------------------------------------------------
+    # Merge same Symbol + exact Expiry
+    # --------------------------------------------------------
+
     merged = current.merge(
         previous,
         on=["Symbol", "Expiry_Date"],
@@ -133,6 +167,10 @@ def classify_futures():
     if merged.empty:
         print("No matching symbol + expiry contracts found.")
         return
+
+    # --------------------------------------------------------
+    # Calculate changes
+    # --------------------------------------------------------
 
     merged["Price_Change_Pct"] = (
         (
@@ -151,6 +189,24 @@ def classify_futures():
         / merged["Open_Interest_previous"]
         * 100
     )
+
+    # Remove invalid comparisons
+    merged = merged[
+        merged["Close_Price_previous"].notna()
+        & (merged["Close_Price_previous"] != 0)
+        & merged["Open_Interest_previous"].notna()
+        & (merged["Open_Interest_previous"] != 0)
+        & merged["Price_Change_Pct"].notna()
+        & merged["OI_Change_Pct"].notna()
+    ].copy()
+
+    if merged.empty:
+        print("No valid price/OI comparisons available.")
+        return
+
+    # --------------------------------------------------------
+    # Classification
+    # --------------------------------------------------------
 
     def classification(row):
 
@@ -176,29 +232,42 @@ def classify_futures():
         classification, axis=1
     )
 
+    # --------------------------------------------------------
+    # Prepare final output
+    # --------------------------------------------------------
+
     result = pd.DataFrame({
         "Trade_Date": merged["Trade_Date_current"],
+        "Previous_Trade_Date": merged["Trade_Date_previous"],
         "Symbol": merged["Symbol"],
         "Expiry_Date": merged["Expiry_Date"],
         "Close_Price": merged["Close_Price_current"],
+        "Close_Price_Previous": merged["Close_Price_previous"],
         "Price_Change_Pct": merged["Price_Change_Pct"],
         "Open_Interest": merged["Open_Interest_current"],
+        "Open_Interest_Previous": merged["Open_Interest_previous"],
         "OI_Change_Pct": merged["OI_Change_Pct"],
         "Volume": merged.get("Volume_current"),
         "Classification": merged["Classification"],
+        "Refresh_Time_IST": refresh_time,
     })
 
-    result["Trade_Date"] = (
-        pd.to_datetime(result["Trade_Date"])
-        .dt.strftime("%Y-%m-%d")
-    )
+    result["Trade_Date"] = pd.to_datetime(
+        result["Trade_Date"]
+    ).dt.strftime("%Y-%m-%d")
 
-    result["Expiry_Date"] = (
-        pd.to_datetime(result["Expiry_Date"])
-        .dt.strftime("%Y-%m-%d")
-    )
+    result["Previous_Trade_Date"] = pd.to_datetime(
+        result["Previous_Trade_Date"]
+    ).dt.strftime("%Y-%m-%d")
 
-    # Append classifications while avoiding duplicate dates/contracts
+    result["Expiry_Date"] = pd.to_datetime(
+        result["Expiry_Date"]
+    ).dt.strftime("%Y-%m-%d")
+
+    # --------------------------------------------------------
+    # Append history, replacing duplicate date/symbol/expiry
+    # --------------------------------------------------------
+
     if CLASSIFICATION_FILE.exists():
 
         old = pd.read_csv(CLASSIFICATION_FILE)
@@ -214,6 +283,10 @@ def classify_futures():
     combined = combined.drop_duplicates(
         subset=["Trade_Date", "Symbol", "Expiry_Date"],
         keep="last"
+    )
+
+    combined = combined.sort_values(
+        ["Trade_Date", "Symbol"]
     )
 
     combined.to_csv(
