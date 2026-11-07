@@ -6,142 +6,205 @@
 <title>Aurora Futures OI Dashboard</title>
 
 <style>
+:root {
+    --navy: #172d4b;
+    --bg: #f3f6fa;
+    --white: #ffffff;
+    --border: #dbe3ed;
+    --green: #008c45;
+    --red: #d62828;
+    --text: #172033;
+}
+
 * { box-sizing: border-box; }
 
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f9;
     margin: 0;
-    padding: 20px;
-    color: #172033;
+    padding: 18px;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
 }
 
 header {
-    background: #142b4a;
+    background: var(--navy);
     color: white;
-    padding: 22px;
-    border-radius: 10px;
-    margin-bottom: 20px;
+    padding: 28px;
+    border-radius: 14px;
+    margin-bottom: 22px;
 }
 
-header h1 { margin: 0 0 8px; }
-header p { margin: 0; color: #dce7f5; }
-
-.cards {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(180px, 1fr));
-    gap: 12px;
-    margin: 15px 0;
+header h1 {
+    margin: 0 0 10px;
+    font-size: 32px;
 }
 
-.card {
-    background: white;
-    padding: 18px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px #00000012;
-}
-
-.card h3 {
-    font-size: 14px;
-    margin: 0 0 12px;
-}
-
-.card .number {
-    font-size: 24px;
-    font-weight: bold;
+header p {
+    margin: 0;
+    font-size: 17px;
 }
 
 section { margin-bottom: 24px; }
 
-h2 { font-size: 20px; }
-
-.controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 15px 0;
+h2 {
+    font-size: 23px;
+    margin: 24px 0 14px;
 }
 
-input, select, button {
-    padding: 10px;
-    border: 1px solid #ccd3dd;
-    border-radius: 6px;
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+}
+
+.card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.04);
+}
+
+.card-title {
+    color: #526078;
     font-size: 14px;
+    margin-bottom: 12px;
 }
 
-button {
-    background: #142b4a;
-    color: white;
-    cursor: pointer;
+.card-value {
+    font-size: 25px;
+    font-weight: bold;
 }
-
-button:hover { background: #244a78; }
 
 .classification-card {
     cursor: pointer;
-    border-top: 4px solid #142b4a;
-}
-
-.classification-card.active {
-    outline: 2px solid #142b4a;
+    transition: .15s;
 }
 
 .classification-card:hover {
     transform: translateY(-2px);
+    border-color: #7896bd;
 }
 
-.table-container {
+.classification-card.active {
+    border: 2px solid var(--navy);
+    background: #eaf1fb;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+}
+
+input, select, button {
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+input {
+    flex: 1;
+    min-width: 220px;
+}
+
+button {
+    cursor: pointer;
+    background: var(--navy);
+    color: white;
+}
+
+button.secondary {
+    background: white;
+    color: var(--navy);
+}
+
+.message {
+    padding: 12px;
+    border-radius: 8px;
+    background: white;
+    margin: 12px 0;
+}
+
+.error { color: var(--red); }
+.success { color: var(--green); }
+
+.table-wrap {
     overflow-x: auto;
     background: white;
-    border-radius: 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
-    background: white;
+    white-space: nowrap;
 }
 
 th, td {
     padding: 10px;
-    border-bottom: 1px solid #dce2ea;
     text-align: left;
-    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
 }
 
 th {
-    background: #e8edf4;
-    cursor: pointer;
+    background: #e8edf5;
     position: sticky;
     top: 0;
+    z-index: 1;
 }
 
-tr:hover { background: #f6f9fc; }
+tbody tr:hover { background: #f4f8fc; }
 
-.positive { color: green; font-weight: bold; }
-.negative { color: red; font-weight: bold; }
+.positive {
+    color: var(--green);
+    font-weight: bold;
+}
 
-.status {
-    margin: 12px 0;
+.negative {
+    color: var(--red);
+    font-weight: bold;
+}
+
+.neutral { color: #687386; }
+
+.small-note {
+    color: #5c6678;
     font-size: 13px;
-    color: #455468;
 }
 
-.message {
-    background: white;
+#lookupResult {
+    margin-top: 12px;
+}
+
+.lookup-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.lookup-item {
+    background: #f5f8fc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
     padding: 12px;
-    border-radius: 6px;
-    margin: 10px 0;
 }
 
-@media (max-width: 900px) {
-    .cards { grid-template-columns: repeat(2, 1fr); }
+.lookup-item strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #5c6678;
+    font-size: 13px;
 }
 
-@media (max-width: 550px) {
-    body { padding: 10px; }
-    .cards { grid-template-columns: 1fr; }
+@media (max-width: 600px) {
+    body { padding: 9px; }
+    header { padding: 20px; }
+    header h1 { font-size: 25px; }
 }
 </style>
 </head>
@@ -150,59 +213,76 @@ tr:hover { background: #f6f9fc; }
 
 <header>
     <h1>Aurora Futures OI Dashboard</h1>
-    <p>Daily Front-Month Stock Futures | Open Interest Analysis</p>
+    <p>Front-month stock futures • Daily price and Open Interest classification</p>
 </header>
 
 <section>
     <div class="cards">
         <div class="card">
-            <h3>Total Stock Futures</h3>
-            <div class="number" id="totalCount">—</div>
+            <div class="card-title">Total Stock Futures</div>
+            <div class="card-value" id="totalCount">—</div>
         </div>
 
         <div class="card">
-            <h3>Bhavcopy Date</h3>
-            <div class="number" id="bhavDate">—</div>
+            <div class="card-title">Bhavcopy / Trading Date</div>
+            <div class="card-value" id="bhavDate">—</div>
         </div>
 
         <div class="card">
-            <h3>Front-Month Expiry</h3>
-            <div class="number" id="expiryDate">—</div>
+            <div class="card-title">Front-Month Expiry</div>
+            <div class="card-value" id="expiryDate">—</div>
         </div>
 
         <div class="card">
-            <h3>Last Refresh (IST)</h3>
-            <div class="number" id="refreshTime" style="font-size:15px">—</div>
+            <div class="card-title">Last Refresh (IST)</div>
+            <div class="card-value" id="refreshTime">—</div>
         </div>
     </div>
+
+    <div id="status" class="message">Loading dashboard data...</div>
 </section>
 
 <section>
-    <h2>Open Interest Classification</h2>
+    <h2>Stock Search / Quick Lookup</h2>
+
+    <div class="controls">
+        <input id="stockSearch"
+               placeholder="Enter stock symbol (e.g. ABB, RELIANCE, HDFCBANK)"
+               autocomplete="off">
+
+        <button onclick="findStock()">Find Stock</button>
+        <button class="secondary" onclick="clearSearch()">Clear</button>
+    </div>
+
+    <div id="lookupResult"></div>
+</section>
+
+<section>
+    <h2>Open Interest Classification — Latest Trading Date</h2>
 
     <div class="cards">
         <div class="card classification-card" data-category="Long Buildup"
              onclick="selectCategory('Long Buildup')">
-            <h3>Long Buildup</h3>
-            <div class="number" id="longBuildup">0</div>
+            <div class="card-title">Long Buildup</div>
+            <div class="card-value" id="longBuildup">0</div>
         </div>
 
         <div class="card classification-card" data-category="Short Buildup"
              onclick="selectCategory('Short Buildup')">
-            <h3>Short Buildup</h3>
-            <div class="number" id="shortBuildup">0</div>
+            <div class="card-title">Short Buildup</div>
+            <div class="card-value" id="shortBuildup">0</div>
         </div>
 
         <div class="card classification-card" data-category="Short Covering"
              onclick="selectCategory('Short Covering')">
-            <h3>Short Covering</h3>
-            <div class="number" id="shortCovering">0</div>
+            <div class="card-title">Short Covering</div>
+            <div class="card-value" id="shortCovering">0</div>
         </div>
 
         <div class="card classification-card" data-category="Long Unwinding"
              onclick="selectCategory('Long Unwinding')">
-            <h3>Long Unwinding</h3>
-            <div class="number" id="longUnwinding">0</div>
+            <div class="card-title">Long Unwinding</div>
+            <div class="card-value" id="longUnwinding">0</div>
         </div>
     </div>
 </section>
@@ -210,19 +290,17 @@ tr:hover { background: #f6f9fc; }
 <section>
     <h2>Daily Classification Changes</h2>
 
-    <div class="cards">
-        <div class="card">
-            <h3>Stocks Changed Classification</h3>
-            <div class="number" id="classificationChangeCount">0</div>
-        </div>
+    <div class="card">
+        <div class="card-title">Stocks Changed Classification</div>
+        <div class="card-value" id="classificationChangeCount">0</div>
     </div>
 
-    <div class="message" id="classificationChangesMessage">
+    <div id="classificationChangesMessage" class="message">
         Loading classification changes...
     </div>
 
-    <div class="table-container">
-        <table id="classificationChangesTable">
+    <div class="table-wrap">
+        <table>
             <thead>
                 <tr>
                     <th>Symbol</th>
@@ -241,36 +319,34 @@ tr:hover { background: #f6f9fc; }
     <h2 id="tableHeading">All Classified Futures</h2>
 
     <div class="controls">
-        <input type="text" id="searchInput" placeholder="Search stock symbol...">
+        <input id="tableSearch"
+               placeholder="Search within this table by stock symbol..."
+               oninput="renderTable()">
 
-        <select id="categoryFilter">
-            <option value="All">All Classifications</option>
-            <option value="Long Buildup">Long Buildup</option>
-            <option value="Short Buildup">Short Buildup</option>
-            <option value="Short Covering">Short Covering</option>
-            <option value="Long Unwinding">Long Unwinding</option>
-            <option value="Neutral">Neutral</option>
+        <select id="sortBy" onchange="renderTable()">
+            <option value="Symbol">Sort by Symbol</option>
+            <option value="Price_Change_Pct">Sort by Price Change</option>
+            <option value="OI_Change_Pct">Sort by OI Change</option>
         </select>
 
         <button onclick="downloadCSV()">Download CSV</button>
-        <button onclick="loadData()">Refresh Data</button>
+        <button class="secondary" onclick="selectCategory('All')">Show All</button>
     </div>
 
-    <div class="status" id="status">Loading data...</div>
+    <div class="small-note" id="tableInfo"></div>
 
-    <div class="table-container">
-        <table id="futuresTable">
+    <div class="table-wrap">
+        <table>
             <thead>
                 <tr>
-                    <th onclick="sortTable('Trade_Date')">Trade Date ↕</th>
-                    <th onclick="sortTable('Symbol')">Symbol ↕</th>
-                    <th onclick="sortTable('Expiry_Date')">Expiry ↕</th>
-                    <th onclick="sortTable('Close_Price')">Close Price ↕</th>
-                    <th onclick="sortTable('Price_Change_Pct')">Price Change (%) ↕</th>
-                    <th onclick="sortTable('Open_Interest')">Open Interest ↕</th>
-                    <th onclick="sortTable('OI_Change_Pct')">OI Change (%) ↕</th>
-                    <th onclick="sortTable('Volume')">Volume ↕</th>
-                    <th onclick="sortTable('Classification')">Classification ↕</th>
+                    <th>Symbol</th>
+                    <th>Expiry</th>
+                    <th>Close Price</th>
+                    <th>Price Change (%)</th>
+                    <th>Open Interest</th>
+                    <th>OI Change (%)</th>
+                    <th>Volume</th>
+                    <th>Classification</th>
                 </tr>
             </thead>
             <tbody id="futuresBody"></tbody>
@@ -279,76 +355,78 @@ tr:hover { background: #f6f9fc; }
 </section>
 
 <script>
-const BASE_URL =
-    "https://raw.githubusercontent.com/Sunjay66/Aurora-Future-Scanner/main/data/";
+"use strict";
 
-const SNAPSHOT_URL = BASE_URL + "front_month_snapshot.csv";
-const CLASSIFICATION_URL = BASE_URL + "oi_classification_history.csv";
+// Relative URLs: these resolve from the GitHub Pages repository site.
+const SNAPSHOT_URL = "data/front_month_snapshot.csv";
+const CLASSIFICATION_URL = "data/oi_classification_history.csv";
 
 let futuresData = [];
-let classificationData = [];
 let classificationHistoryData = [];
+let classificationData = [];
 let selectedCategory = "All";
-let sortColumn = "Symbol";
-let sortAscending = true;
+let dailyChanges = [];
 
-
-// CSV parser supporting quoted fields
-function parseCSVLine(line) {
-    const result = [];
+function parseCSV(text) {
+    const rows = [];
+    let row = [];
     let value = "";
-    let quoted = false;
+    let insideQuotes = false;
 
-    for (let i = 0; i < line.length; i++) {
-        const char = line[i];
+    text = text.replace(/^\uFEFF/, "");
 
-        if (char === '"') {
-            if (quoted && line[i + 1] === '"') {
-                value += '"';
-                i++;
-            } else {
-                quoted = !quoted;
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const next = text[i + 1];
+
+        if (char === '"' && insideQuotes && next === '"') {
+            value += '"';
+            i++;
+        } else if (char === '"') {
+            insideQuotes = !insideQuotes;
+        } else if (char === "," && !insideQuotes) {
+            row.push(value);
+            value = "";
+        } else if ((char === "\n" || char === "\r") && !insideQuotes) {
+            if (char === "\r" && next === "\n") i++;
+
+            row.push(value);
+
+            if (row.some(cell => cell.trim() !== "")) {
+                rows.push(row);
             }
-        } else if (char === "," && !quoted) {
-            result.push(value);
+
+            row = [];
             value = "";
         } else {
             value += char;
         }
     }
 
-    result.push(value);
-    return result;
-}
+    if (value.length || row.length) {
+        row.push(value);
+        if (row.some(cell => cell.trim() !== "")) rows.push(row);
+    }
 
+    if (!rows.length) return [];
 
-function parseCSV(text) {
-    const lines = text.trim().split(/\r?\n/);
+    const headers = rows[0].map(h => h.trim());
 
-    if (lines.length < 2) return [];
+    return rows.slice(1).map(values => {
+        const obj = {};
 
-    const headers = parseCSVLine(lines[0]).map(h => h.trim());
-
-    return lines.slice(1)
-        .filter(line => line.trim() !== "")
-        .map(line => {
-            const values = parseCSVLine(line);
-            const row = {};
-
-            headers.forEach((header, index) => {
-                row[header] = values[index] ?? "";
-            });
-
-            return row;
+        headers.forEach((header, index) => {
+            obj[header] = (values[index] ?? "").trim();
         });
-}
 
+        return obj;
+    });
+}
 
 function numberValue(value) {
     const n = Number(value);
     return Number.isFinite(n) ? n : null;
 }
-
 
 function formatNumber(value) {
     const n = numberValue(value);
@@ -357,33 +435,54 @@ function formatNumber(value) {
     });
 }
 
-
 function formatPercent(value) {
     const n = numberValue(value);
+
     if (n === null) return "—";
 
-    return (n > 0 ? "+" : "") + n.toFixed(2) + "%";
+    const sign = n > 0 ? "+" : "";
+    return sign + n.toFixed(2) + "%";
 }
-
 
 function percentClass(value) {
     const n = numberValue(value);
 
-    if (n === null) return "";
-    if (n > 0) return "positive";
-    if (n < 0) return "negative";
-
-    return "";
+    if (n === null || n === 0) return "neutral";
+    return n > 0 ? "positive" : "negative";
 }
 
+function dateOnly(value) {
+    if (!value) return "";
 
-function getLatestDate(rows) {
-    if (!rows.length) return "";
-
-    return rows.reduce((latest, row) =>
-        row.Trade_Date > latest ? row.Trade_Date : latest, "");
+    return String(value).substring(0, 10);
 }
 
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
+
+function latestDate(rows) {
+    return rows.reduce((latest, row) => {
+        const date = dateOnly(row.Trade_Date);
+        return date > latest ? date : latest;
+    }, "");
+}
+
+function findPreviousClassification(row) {
+    const previousDate = row.Previous_Trade_Date;
+
+    return classificationHistoryData.find(old =>
+        dateOnly(old.Trade_Date) === dateOnly(previousDate) &&
+        old.Symbol === row.Symbol &&
+        dateOnly(old.Expiry_Date) === dateOnly(row.Expiry_Date)
+    );
+}
 
 function countCategory(category) {
     return classificationData.filter(row =>
@@ -391,238 +490,372 @@ function countCategory(category) {
     ).length;
 }
 
+function selectCategory(category) {
+    selectedCategory = category;
 
-// Match same stock and same expiry
-function findPreviousRecord(previousRows, currentRow) {
-    return previousRows.find(old =>
-        old.Symbol === currentRow.Symbol &&
-        old.Expiry_Date === currentRow.Expiry_Date
-    );
+    document.querySelectorAll(".classification-card").forEach(card => {
+        card.classList.toggle(
+            "active",
+            card.dataset.category === category
+        );
+    });
+
+    document.getElementById("tableHeading").textContent =
+        category === "All"
+            ? "All Classified Futures"
+            : category + " — Latest Trading Date";
+
+    renderTable();
 }
 
+async function loadData() {
+    const status = document.getElementById("status");
 
-function renderClassificationChanges() {
-    const message = document.getElementById("classificationChangesMessage");
-    const body = document.getElementById("classificationChangesBody");
+    status.textContent = "Fetching latest data from GitHub...";
+    status.className = "message";
+
+    try {
+        const [snapshotResponse, classificationResponse] =
+            await Promise.all([
+                fetch(SNAPSHOT_URL + "?t=" + Date.now()),
+                fetch(CLASSIFICATION_URL + "?t=" + Date.now())
+            ]);
+
+        if (!snapshotResponse.ok) {
+            throw new Error(
+                "Snapshot CSV failed: HTTP " + snapshotResponse.status
+            );
+        }
+
+        if (!classificationResponse.ok) {
+            throw new Error(
+                "Classification CSV failed: HTTP " +
+                classificationResponse.status
+            );
+        }
+
+        const snapshotCSV = await snapshotResponse.text();
+        const classificationCSV = await classificationResponse.text();
+
+        futuresData = parseCSV(snapshotCSV);
+        classificationHistoryData = parseCSV(classificationCSV);
+
+        if (!futuresData.length) {
+            throw new Error("Snapshot CSV contains no stock futures.");
+        }
+
+        if (!classificationHistoryData.length) {
+            throw new Error("Classification CSV contains no records.");
+        }
+
+        const currentSnapshotDate = latestDate(futuresData);
+        const latestClassificationDate = latestDate(
+            classificationHistoryData
+        );
+
+        classificationData = classificationHistoryData.filter(row =>
+            dateOnly(row.Trade_Date) === latestClassificationDate
+        );
+
+        // Keep classification display aligned with the snapshot date.
+        if (latestClassificationDate !== currentSnapshotDate) {
+            status.textContent =
+                "Warning: Snapshot date " + currentSnapshotDate +
+                " differs from classification date " +
+                latestClassificationDate + ".";
+            status.className = "message error";
+        } else {
+            status.textContent =
+                "Data loaded successfully | " +
+                futuresData.length + " futures | Trading date: " +
+                currentSnapshotDate;
+            status.className = "message success";
+        }
+
+        document.getElementById("totalCount").textContent =
+            futuresData.length;
+
+        document.getElementById("bhavDate").textContent =
+            futuresData[0].Bhavcopy_Date ||
+            futuresData[0].Trade_Date || "—";
+
+        document.getElementById("expiryDate").textContent =
+            futuresData[0].Expiry_Date || "—";
+
+        document.getElementById("refreshTime").textContent =
+            futuresData[0].Refresh_Time_IST || "—";
+
+        document.getElementById("longBuildup").textContent =
+            countCategory("Long Buildup");
+
+        document.getElementById("shortBuildup").textContent =
+            countCategory("Short Buildup");
+
+        document.getElementById("shortCovering").textContent =
+            countCategory("Short Covering");
+
+        document.getElementById("longUnwinding").textContent =
+            countCategory("Long Unwinding");
+
+        buildClassificationChanges();
+        renderTable();
+
+    } catch (error) {
+        status.textContent =
+            "Unable to load data: " + error.message +
+            " — check CSV files and GitHub Pages deployment.";
+        status.className = "message error";
+
+        console.error("Aurora dashboard error:", error);
+    }
+}
+
+function buildClassificationChanges() {
+    const message = document.getElementById(
+        "classificationChangesMessage"
+    );
+
+    const body = document.getElementById(
+        "classificationChangesBody"
+    );
 
     body.innerHTML = "";
 
-    if (!classificationHistoryData.length) {
-        document.getElementById("classificationChangeCount").textContent = "0";
-        message.textContent = "Classification history is not available.";
-        return;
-    }
-
-    const dates = [...new Set(
-        classificationHistoryData.map(row => row.Trade_Date)
-            .filter(Boolean)
+    const allDates = [...new Set(
+        classificationHistoryData.map(row => dateOnly(row.Trade_Date))
     )].sort();
 
-    if (dates.length < 2) {
-        document.getElementById("classificationChangeCount").textContent = "0";
+    const currentDate = allDates[allDates.length - 1];
+    const previousDate = allDates[allDates.length - 2];
+
+    if (!currentDate || !previousDate) {
+        document.getElementById("classificationChangeCount").textContent = 0;
         message.textContent =
-            "Only one trading date is available. Daily changes require at least two dates.";
+            "Not enough historical dates to compare classifications.";
         return;
     }
 
-    const currentDate = dates[dates.length - 1];
-    const previousDate = dates[dates.length - 2];
-
     const currentRows = classificationHistoryData.filter(row =>
-        row.Trade_Date === currentDate
+        dateOnly(row.Trade_Date) === currentDate
     );
 
     const previousRows = classificationHistoryData.filter(row =>
-        row.Trade_Date === previousDate
+        dateOnly(row.Trade_Date) === previousDate
     );
 
-    const changes = currentRows.filter(current => {
-        const previous = findPreviousRecord(previousRows, current);
+    dailyChanges = currentRows.filter(current => {
+        const previous = previousRows.find(old =>
+            old.Symbol === current.Symbol &&
+            dateOnly(old.Expiry_Date) === dateOnly(current.Expiry_Date)
+        );
 
         return previous &&
             previous.Classification !== current.Classification;
     });
 
     document.getElementById("classificationChangeCount").textContent =
-        changes.length;
+        dailyChanges.length;
 
     message.textContent =
         "Comparing " + previousDate + " with " + currentDate +
-        " | Matched symbols: " + currentRows.length;
+        " | Matched symbols: " +
+        currentRows.filter(current =>
+            previousRows.some(old =>
+                old.Symbol === current.Symbol &&
+                dateOnly(old.Expiry_Date) === dateOnly(current.Expiry_Date)
+            )
+        ).length;
 
-    if (!changes.length) {
-        body.innerHTML =
-            '<tr><td colspan="5">No stocks changed classification between these dates.</td></tr>';
-        return;
-    }
+    dailyChanges.sort((a, b) => a.Symbol.localeCompare(b.Symbol));
 
-    changes.sort((a, b) => a.Symbol.localeCompare(b.Symbol));
-
-    changes.forEach(current => {
-        const previous = findPreviousRecord(previousRows, current);
+    dailyChanges.forEach(current => {
+        const previous = previousRows.find(old =>
+            old.Symbol === current.Symbol &&
+            dateOnly(old.Expiry_Date) === dateOnly(current.Expiry_Date)
+        );
 
         const tr = document.createElement("tr");
 
-        const values = [
-            current.Symbol,
-            previous.Classification,
-            current.Classification,
-            formatPercent(current.Price_Change_Pct),
-            formatPercent(current.OI_Change_Pct)
-        ];
-
-        values.forEach((value, index) => {
-            const td = document.createElement("td");
-            td.textContent = value;
-
-            if (index === 3) {
-                td.className = percentClass(current.Price_Change_Pct);
-            }
-
-            if (index === 4) {
-                td.className = percentClass(current.OI_Change_Pct);
-            }
-
-            tr.appendChild(td);
-        });
+        tr.innerHTML = `
+            <td><strong>${escapeHTML(current.Symbol)}</strong></td>
+            <td>${escapeHTML(previous.Classification)}</td>
+            <td>${escapeHTML(current.Classification)}</td>
+            <td class="${percentClass(current.Price_Change_Pct)}">
+                ${formatPercent(current.Price_Change_Pct)}
+            </td>
+            <td class="${percentClass(current.OI_Change_Pct)}">
+                ${formatPercent(current.OI_Change_Pct)}
+            </td>
+        `;
 
         body.appendChild(tr);
     });
+
+    if (!dailyChanges.length) {
+        message.textContent += " | No classification changes found.";
+    }
 }
-
-
-function renderClassificationCards() {
-    document.getElementById("longBuildup").textContent =
-        countCategory("Long Buildup");
-
-    document.getElementById("shortBuildup").textContent =
-        countCategory("Short Buildup");
-
-    document.getElementById("shortCovering").textContent =
-        countCategory("Short Covering");
-
-    document.getElementById("longUnwinding").textContent =
-        countCategory("Long Unwinding");
-}
-
 
 function renderTable() {
     const body = document.getElementById("futuresBody");
-    body.innerHTML = "";
-
-    const search = document.getElementById("searchInput")
+    const search = document.getElementById("tableSearch")
         .value.trim().toUpperCase();
 
-    const category = document.getElementById("categoryFilter").value;
+    const sortBy = document.getElementById("sortBy").value;
 
-    let filtered = classificationData.filter(row => {
-        const matchesSearch = row.Symbol.toUpperCase().includes(search);
-        const matchesCategory =
-            category === "All" || row.Classification === category;
+    body.innerHTML = "";
 
-        return matchesSearch && matchesCategory;
+    let rows = classificationData.filter(row => {
+        const categoryMatches =
+            selectedCategory === "All" ||
+            row.Classification === selectedCategory;
+
+        const searchMatches =
+            !search || row.Symbol.toUpperCase().includes(search);
+
+        return categoryMatches && searchMatches;
     });
 
-    filtered.sort((a, b) => {
-        let first = a[sortColumn] ?? "";
-        let second = b[sortColumn] ?? "";
-
-        const n1 = numberValue(first);
-        const n2 = numberValue(second);
-
-        if (n1 !== null && n2 !== null) {
-            return sortAscending ? n1 - n2 : n2 - n1;
-        }
-
-        return sortAscending
-            ? String(first).localeCompare(String(second))
-            : String(second).localeCompare(String(first));
-    });
-
-    if (!filtered.length) {
-        body.innerHTML =
-            '<tr><td colspan="9">No matching futures found.</td></tr>';
-        return;
+    if (sortBy === "Symbol") {
+        rows.sort((a, b) => a.Symbol.localeCompare(b.Symbol));
+    } else {
+        rows.sort((a, b) =>
+            (numberValue(b[sortBy]) ?? -Infinity) -
+            (numberValue(a[sortBy]) ?? -Infinity)
+        );
     }
 
-    filtered.forEach(row => {
+    document.getElementById("tableInfo").textContent =
+        "Showing " + rows.length + " stocks | " +
+        "Trading date: " + (latestDate(classificationData) || "—") +
+        " | Selected: " + selectedCategory;
+
+    rows.forEach(row => {
         const tr = document.createElement("tr");
 
-        const values = [
-            row.Trade_Date,
-            row.Symbol,
-            row.Expiry_Date,
-            formatNumber(row.Close_Price),
-            formatPercent(row.Price_Change_Pct),
-            formatNumber(row.Open_Interest),
-            formatPercent(row.OI_Change_Pct),
-            formatNumber(row.Volume),
-            row.Classification
-        ];
-
-        values.forEach((value, index) => {
-            const td = document.createElement("td");
-            td.textContent = value;
-
-            if (index === 4) {
-                td.className = percentClass(row.Price_Change_Pct);
-            }
-
-            if (index === 6) {
-                td.className = percentClass(row.OI_Change_Pct);
-            }
-
-            tr.appendChild(td);
-        });
+        tr.innerHTML = `
+            <td><strong>${escapeHTML(row.Symbol)}</strong></td>
+            <td>${escapeHTML(row.Expiry_Date)}</td>
+            <td>${formatNumber(row.Close_Price)}</td>
+            <td class="${percentClass(row.Price_Change_Pct)}">
+                ${formatPercent(row.Price_Change_Pct)}
+            </td>
+            <td>${formatNumber(row.Open_Interest)}</td>
+            <td class="${percentClass(row.OI_Change_Pct)}">
+                ${formatPercent(row.OI_Change_Pct)}
+            </td>
+            <td>${formatNumber(row.Volume)}</td>
+            <td>${escapeHTML(row.Classification)}</td>
+        `;
 
         body.appendChild(tr);
     });
-
-    document.getElementById("tableHeading").textContent =
-        category === "All"
-            ? "All Classified Futures"
-            : category + " Futures";
 }
 
-
-function selectCategory(category) {
-    selectedCategory = category;
-    document.getElementById("categoryFilter").value = category;
-
-    document.querySelectorAll(".classification-card")
-        .forEach(card => {
-            card.classList.toggle(
-                "active",
-                card.dataset.category === category
-            );
-        });
-
-    renderTable();
-}
-
-
-function sortTable(column) {
-    if (sortColumn === column) {
-        sortAscending = !sortAscending;
-    } else {
-        sortColumn = column;
-        sortAscending = true;
-    }
-
-    renderTable();
-}
-
-
-function downloadCSV() {
-    const search = document.getElementById("searchInput")
+function findStock() {
+    const symbol = document.getElementById("stockSearch")
         .value.trim().toUpperCase();
 
-    const category = document.getElementById("categoryFilter").value;
+    const result = document.getElementById("lookupResult");
 
-    const rows = classificationData.filter(row =>
-        row.Symbol.toUpperCase().includes(search) &&
-        (category === "All" || row.Classification === category)
+    if (!symbol) {
+        result.innerHTML =
+            '<div class="message error">Enter a stock symbol.</div>';
+        return;
+    }
+
+    const current = classificationData.find(row =>
+        row.Symbol.toUpperCase() === symbol
     );
+
+    if (!current) {
+        result.innerHTML =
+            '<div class="message error">Stock not found in latest classification: ' +
+            escapeHTML(symbol) + '</div>';
+        return;
+    }
+
+    const previous = findPreviousClassification(current);
+
+    result.innerHTML = `
+        <div class="card">
+            <h3>${escapeHTML(current.Symbol)} — Stock Lookup</h3>
+
+            <div class="lookup-grid">
+                <div class="lookup-item">
+                    <strong>Current Classification</strong>
+                    ${escapeHTML(current.Classification)}
+                </div>
+
+                <div class="lookup-item">
+                    <strong>Previous Classification</strong>
+                    ${escapeHTML(previous ? previous.Classification : "Not available")}
+                </div>
+
+                <div class="lookup-item">
+                    <strong>Price Change</strong>
+                    <span class="${percentClass(current.Price_Change_Pct)}">
+                        ${formatPercent(current.Price_Change_Pct)}
+                    </span>
+                </div>
+
+                <div class="lookup-item">
+                    <strong>OI Change</strong>
+                    <span class="${percentClass(current.OI_Change_Pct)}">
+                        ${formatPercent(current.OI_Change_Pct)}
+                    </span>
+                </div>
+
+                <div class="lookup-item">
+                    <strong>Close Price</strong>
+                    ${formatNumber(current.Close_Price)}
+                </div>
+
+                <div class="lookup-item">
+                    <strong>Open Interest</strong>
+                    ${formatNumber(current.Open_Interest)}
+                </div>
+
+                <div class="lookup-item">
+                    <strong>Expiry</strong>
+                    ${escapeHTML(current.Expiry_Date)}
+                </div>
+
+                <div class="lookup-item">
+                    <strong>Volume</strong>
+                    ${formatNumber(current.Volume)}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Also highlight the stock in the main table.
+    document.getElementById("tableSearch").value = symbol;
+    selectCategory("All");
+}
+
+function clearSearch() {
+    document.getElementById("stockSearch").value = "";
+    document.getElementById("tableSearch").value = "";
+    document.getElementById("lookupResult").innerHTML = "";
+
+    selectCategory("All");
+}
+
+function downloadCSV() {
+    let rows = classificationData.filter(row =>
+        selectedCategory === "All" ||
+        row.Classification === selectedCategory
+    );
+
+    const search = document.getElementById("tableSearch")
+        .value.trim().toUpperCase();
+
+    if (search) {
+        rows = rows.filter(row =>
+            row.Symbol.toUpperCase().includes(search)
+        );
+    }
 
     if (!rows.length) {
         alert("No data available to download.");
@@ -640,107 +873,26 @@ function downloadCSV() {
         )
     ].join("\n");
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob([csv], {
+        type: "text/csv;charset=utf-8;"
+    });
 
     const link = document.createElement("a");
-    link.href = url;
-    link.download = "Aurora_Futures_OI.csv";
+    link.href = URL.createObjectURL(blob);
+    link.download = "Aurora_OI_" + selectedCategory.replace(/\s/g, "_") +
+        ".csv";
+
+    document.body.appendChild(link);
     link.click();
+    link.remove();
 
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(link.href);
 }
 
+document.getElementById("stockSearch").addEventListener("keydown", event => {
+    if (event.key === "Enter") findStock();
+});
 
-async function loadData() {
-    const status = document.getElementById("status");
-    status.textContent = "Fetching latest data from GitHub...";
-
-    try {
-        const timestamp = Date.now();
-
-        const [snapshotResponse, classificationResponse] =
-            await Promise.all([
-                fetch(SNAPSHOT_URL + "?t=" + timestamp),
-                fetch(CLASSIFICATION_URL + "?t=" + timestamp)
-            ]);
-
-        if (!snapshotResponse.ok) {
-            throw new Error("Snapshot CSV request failed: " +
-                snapshotResponse.status);
-        }
-
-        if (!classificationResponse.ok) {
-            throw new Error("Classification CSV request failed: " +
-                classificationResponse.status);
-        }
-
-        const [snapshotCSV, classificationCSV] = await Promise.all([
-            snapshotResponse.text(),
-            classificationResponse.text()
-        ]);
-
-        futuresData = parseCSV(snapshotCSV);
-        classificationHistoryData = parseCSV(classificationCSV);
-
-        if (!futuresData.length) {
-            throw new Error("Snapshot contains no stock futures.");
-        }
-
-        if (!classificationHistoryData.length) {
-            throw new Error("Classification history CSV is empty.");
-        }
-
-        // Latest classification date
-        const latestDate = getLatestDate(classificationHistoryData);
-
-        classificationData = classificationHistoryData.filter(row =>
-            row.Trade_Date === latestDate
-        );
-
-        // Snapshot summary
-        document.getElementById("totalCount").textContent =
-            futuresData.length;
-
-        document.getElementById("bhavDate").textContent =
-            futuresData[0].Bhavcopy_Date ||
-            futuresData[0].Trade_Date ||
-            "—";
-
-        document.getElementById("expiryDate").textContent =
-            futuresData[0].Expiry_Date || "—";
-
-        document.getElementById("refreshTime").textContent =
-            futuresData[0].Refresh_Time_IST || "—";
-
-        renderClassificationCards();
-        renderClassificationChanges();
-        renderTable();
-
-        status.textContent =
-            "Data loaded successfully | " + futuresData.length +
-            " futures | Latest classification date: " + latestDate;
-
-    } catch (error) {
-        status.textContent = "Unable to load data: " + error.message;
-
-        document.getElementById("classificationChangesMessage")
-            .textContent = "Unable to calculate classification changes.";
-
-        console.error("Aurora dashboard error:", error);
-    }
-}
-
-
-// Search and category filter
-document.getElementById("searchInput")
-    .addEventListener("input", renderTable);
-
-document.getElementById("categoryFilter")
-    .addEventListener("change", renderTable);
-
-
-// Load data on page opening
 loadData();
 </script>
 
