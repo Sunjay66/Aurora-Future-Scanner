@@ -177,7 +177,34 @@ footer {
     </div>
 </div>
 
-<h2 id="tableHeading">All Classified Futures</h2>
+<h2>Daily Classification Changes</h2>
+
+<div class="cards">
+    <div class="card">
+        <h3>Stocks Changed Classification</h3>
+        <div id="classificationChangeCount">0</div>
+    </div>
+</div>
+
+<div id="classificationChangesMessage">
+    Loading classification changes...
+</div>
+
+<div style="overflow-x:auto;">
+    <table id="classificationChangesTable">
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Previous Classification</th>
+                <th>Current Classification</th>
+                <th>Price Change (%)</th>
+                <th>OI Change (%)</th>
+            </tr>
+        </thead>
+        <tbody id="classificationChangesBody"></tbody>
+    </table>
+</div>
+    <h2 id="tableHeading">All Classified Futures</h2>
 
 <div class="controls">
     <input
@@ -226,6 +253,7 @@ const CLASSIFICATION_URL = BASE_URL + "oi_classification_history.csv";
 
 let futuresData = [];
 let classificationData = [];
+let classificationHistoryData = [];
 let selectedCategory = "All";
 
 // Parse CSV rows, including quoted fields
