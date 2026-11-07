@@ -351,6 +351,7 @@ async function loadData() {
 
         futuresData = parseCSV(snapshotCSV);
         classificationData = parseCSV(classificationCSV);
+        classificationHistoryData = [...classificationData];
 
         if (!futuresData.length) {
             throw new Error("Snapshot contains no stock futures.");
