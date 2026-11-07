@@ -381,6 +381,57 @@ async function loadData() {
         classificationData = classificationData.filter(
             row => row.Trade_Date === latestDate
         );
+        // Detect stocks whose classification changed from previous trading date
+const allDates = [...new Set(
+    classificationHistoryData.map(row => row.Trade_Date)
+)].sort();
+
+const previousDate = allDates.length > 1
+    ? allDates[allDates.length - 2]
+    : "";
+
+const previousData = classificationHistoryData.filter(
+    row => row.Trade_Date === previousDate
+);
+
+const changes = classificationData.filter(current => {
+    const previous = previousData.find(
+        row => row.Symbol === current.Symbol &&
+               row.Expiry_Date === current.Expiry_Date
+    );
+
+    return previous &&
+           previous.Classification !== current.Classification;
+});
+
+document.getElementById("classificationChangeCount").textContent =
+    changes.length;
+
+const changesBody = document.getElementById("classificationChangesBody");
+changesBody.innerHTML = "";
+
+changes.forEach(row => {
+    const previous = previousData.find(
+        old => old.Symbol === row.Symbol &&
+               old.Expiry_Date === row.Expiry_Date
+    );
+
+    const tr = document.createElement("tr");
+
+    [
+        row.Symbol,
+        previous.Classification,
+        row.Classification,
+        formatPercent(row.Price_Change_Pct),
+        formatPercent(row.OI_Change_Pct)
+    ].forEach(value => {
+        const td = document.createElement("td");
+        td.textContent = value ?? "";
+        tr.appendChild(td);
+    });
+
+    changesBody.appendChild(tr);
+});
 
         // Classification counts
         document.getElementById("longBuildup").textContent =
