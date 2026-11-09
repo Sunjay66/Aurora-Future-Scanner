@@ -1,0 +1,9 @@
+Trade_Date,Session_Type,Participant,Segment,Buy_Contracts,Sell_Contracts,Total_Volume_Contracts,Net_Buy_Sell_Contracts,Source
+2026-11-06,Regular,FII,Index Futures,,,,,NSE
+2026-11-06,Regular,FII,Stock Futures,,,,,NSE
+2026-11-06,Regular,DII,Index Futures,,,,,NSE
+2026-11-06,Regular,DII,Stock Futures,,,,,NSE
+2026-11-06,Regular,Client,Index Futures,,,,,NSE
+2026-11-06,Regular,Client,Stock Futures,,,,,NSE
+2026-11-06,Regular,Pro,Index Futures,,,,,NSE
+2026-11-06,Regular,Pro,Stock Futures,,,,,NSE
