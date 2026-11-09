@@ -1,0 +1,5 @@
+Trade_Date,Session_Type,Segment,Buy_Contracts,Buy_Value_Cr,Sell_Contracts,Sell_Value_Cr,Net_Buy_Sell_Contracts,Net_Buy_Sell_Value_Cr,EOD_OI_Contracts,EOD_OI_Value_Cr,Source
+2026-11-06,Regular,Index Futures,,,,,,,,,NSE
+2026-11-06,Regular,Index Options,,,,,,,,,NSE
+2026-11-06,Regular,Stock Futures,,,,,,,,,NSE
+2026-11-06,Regular,Stock Options,,,,,,,,,NSE
