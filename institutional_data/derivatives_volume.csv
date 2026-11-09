@@ -1,9 +1,9 @@
 Trade_Date,Session_Type,Participant,Segment,Buy_Contracts,Sell_Contracts,Total_Volume_Contracts,Net_Buy_Sell_Contracts,Source
-2026-11-06,Regular,FII,Index Futures,,,,,NSE
-2026-11-06,Regular,FII,Stock Futures,,,,,NSE
-2026-11-06,Regular,DII,Index Futures,,,,,NSE
-2026-11-06,Regular,DII,Stock Futures,,,,,NSE
-2026-11-06,Regular,Client,Index Futures,,,,,NSE
-2026-11-06,Regular,Client,Stock Futures,,,,,NSE
-2026-11-06,Regular,Pro,Index Futures,,,,,NSE
-2026-11-06,Regular,Pro,Stock Futures,,,,,NSE
+2026-11-06,Regular,FII,Index Futures,65215,28193,93408,37022,NSE
+2026-11-06,Regular,FII,Stock Futures,397938,406085,804023,-8147,NSE
+2026-11-06,Regular,DII,Index Futures,263,9853,10116,-9590,NSE
+2026-11-06,Regular,DII,Stock Futures,142773,112448,255221,30325,NSE
+2026-11-06,Regular,Client,Index Futures,90781,111641,202422,-20860,NSE
+2026-11-06,Regular,Client,Stock Futures,443989,459596,903585,-15607,NSE
+2026-11-06,Regular,Pro,Index Futures,46141,52713,98854,-6572,NSE
+2026-11-06,Regular,Pro,Stock Futures,484046,490617,974663,-6571,NSE
