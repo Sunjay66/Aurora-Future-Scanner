@@ -1,0 +1,9 @@
+Trade_Date,Session_Type,Participant,Segment,Long_OI_Contracts,Short_OI_Contracts,Net_OI_Contracts,Previous_Net_OI_Contracts,Change_Net_OI_Contracts,Source
+2026-11-06,Regular,FII,Index Futures,,,,,,NSE
+2026-11-06,Regular,FII,Stock Futures,,,,,,NSE
+2026-11-06,Regular,DII,Index Futures,,,,,,NSE
+2026-11-06,Regular,DII,Stock Futures,,,,,,NSE
+2026-11-06,Regular,Client,Index Futures,,,,,,NSE
+2026-11-06,Regular,Client,Stock Futures,,,,,,NSE
+2026-11-06,Regular,Pro,Index Futures,,,,,,NSE
+2026-11-06,Regular,Pro,Stock Futures,,,,,,NSE
