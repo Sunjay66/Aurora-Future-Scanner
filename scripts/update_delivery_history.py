@@ -76,8 +76,11 @@ def parse_full_bhavdata(content, day):
     aliases = {
         "TOTAL_TRADED_QUANTITY": "TOTTRDQTY",
         "TOTAL_TRADED_QTY": "TOTTRDQTY",
+        "TOT_TRD_QTY": "TOTTRDQTY",
         "DELIVERABLE_QTY": "DELIVQTY",
+        "DELIV_QTY": "DELIVQTY",
         "DELIVERABLE_QTY_TO_TRADED_QTY": "DELIVPER",
+        "DELIV_PER": "DELIVPER",
         "DELIVERABLE_QTY_TO_TRADED_QTY_%": "DELIVPER",
         "DELIVERABLE_QTY_TO_TRADED_QTY_PERCENT": "DELIVPER",
     }
