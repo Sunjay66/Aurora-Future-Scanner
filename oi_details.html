@@ -147,6 +147,8 @@ function configurePageView(){
  const changes=params.get("view")==="changes";
  const changeSection=document.getElementById("classification-changes");
  const stockSection=[...document.querySelectorAll("section")].find(s=>s.querySelector("#tableHeading"));
+ const refreshBar=document.querySelector(".refresh-bar");
+ if(refreshBar)refreshBar.style.display="none";
  const metadata=document.getElementById("summary-metadata");
  const lookup=document.getElementById("stock-lookup");
  const cards=document.getElementById("classification-cards");
