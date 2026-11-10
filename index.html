@@ -76,9 +76,9 @@ footer{text-align:center;color:var(--muted);font-size:11px;margin:20px 0 8px}
 
 <section>
 <h2>Institutional Participation — FII / DII</h2>
-<p class="sub">Cash-market participation and derivatives positioning. Figures are summaries; detailed participant reports are available separately.</p>
+<p class="sub">Cash-market and derivatives data are labelled by their own latest available source dates; they may lag the latest OI trading date.</p>
 <div class="panel">
-<h3>Cash Market — ₹ Crore</h3>
+<h3>Cash Market — ₹ Crore <span id="cashDataDate" style="font-size:12px;color:#617087;font-weight:normal"></span></h3>
 <p class="desc">Daily net flow, weekly cumulative net flow and month-to-date cumulative net flow.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Participant</th><th>Daily Net</th><th>Weekly Net</th><th>Monthly-to-date Net</th></tr></thead>
@@ -86,7 +86,7 @@ footer{text-align:center;color:var(--muted);font-size:11px;margin:20px 0 8px}
 </table></div>
 </div>
 <div class="panel">
-<h3>Derivatives — Index Futures</h3>
+<h3>Derivatives — Index Futures <span id="derivativesDataDate" style="font-size:12px;color:#617087;font-weight:normal"></span></h3>
 <p class="desc">Change in Long and Short Open Interest (%) across daily, weekly and monthly comparison periods.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Participant</th><th>Daily Long Δ%</th><th>Daily Short Δ%</th><th>Weekly Long Δ%</th><th>Weekly Short Δ%</th><th>Monthly Long Δ%</th><th>Monthly Short Δ%</th></tr></thead>
@@ -94,7 +94,7 @@ footer{text-align:center;color:var(--muted);font-size:11px;margin:20px 0 8px}
 </table></div>
 </div>
 <div class="panel">
-<h3>Derivatives — Stock Futures</h3>
+<h3>Derivatives — Stock Futures <span style="font-size:12px;color:#617087;font-weight:normal"> </span></h3>
 <p class="desc">Change in Long and Short Open Interest (%) across daily, weekly and monthly comparison periods.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Participant</th><th>Daily Long Δ%</th><th>Daily Short Δ%</th><th>Weekly Long Δ%</th><th>Weekly Short Δ%</th><th>Monthly Long Δ%</th><th>Monthly Short Δ%</th></tr></thead>
@@ -143,8 +143,9 @@ function renderCash(rows){
  const rowsHtml=out.map(r=>'<tr><td><b>'+r.p+'</b></td><td class="'+cls(r.daily)+'">'+money(r.daily)+'</td><td class="'+cls(r.weekly)+'">'+money(r.weekly)+'</td><td class="'+cls(r.monthly)+'">'+money(r.monthly)+'</td></tr>').join("");
  const total='<tr class="net-row"><td>Net Institutional Flow (FII + DII)</td><td class="'+cls(combined.daily)+'">'+money(combined.daily)+'</td><td class="'+cls(combined.weekly)+'">'+money(combined.weekly)+'</td><td class="'+cls(combined.monthly)+'">'+money(combined.monthly)+'</td></tr>';
  document.getElementById("cashSummary").innerHTML=rowsHtml+total;
+ document.getElementById("cashDataDate").textContent=" • Source through "+d;
 }
-function renderOiPlaceholder(rows){const d=latest(rows);if(d){document.getElementById("oiPending").textContent="Latest participant OI position available through "+d+". Historical daily snapshots are not yet stored, so daily, weekly and monthly changes are intentionally withheld."}}
+function renderOiPlaceholder(rows){const d=latest(rows);if(d){document.getElementById("derivativesDataDate").textContent=" • Source through "+d;document.getElementById("oiPending").textContent="Latest participant OI position available through "+d+". This is earlier than the latest OI stock-classification date where applicable. Historical participant snapshots are not yet stored, so daily, weekly and monthly changes are intentionally withheld."}}
 async function main(){
  try{
  const [snapshot,history,cash,oi]=await Promise.all([csv(DATA+"front_month_snapshot.csv"),csv(DATA+"oi_classification_history.csv"),csv(INST+"cash_market.csv"),csv(INST+"derivatives_oi.csv")]);
