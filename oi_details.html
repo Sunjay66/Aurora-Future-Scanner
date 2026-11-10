@@ -87,7 +87,7 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1;white-space:normal;line-he
 <div class="card classification-card" data-category="Short Buildup" onclick="selectCategory('Short Buildup')"><div class="card-title">Short Buildup</div><div class="card-value" id="shortBuildup">0</div></div>
 <div class="card classification-card" data-category="Short Covering" onclick="selectCategory('Short Covering')"><div class="card-title">Short Covering</div><div class="card-value" id="shortCovering">0</div></div>
 <div class="card classification-card" data-category="Long Unwinding" onclick="selectCategory('Long Unwinding')"><div class="card-title">Long Unwinding</div><div class="card-value" id="longUnwinding">0</div></div>
-<div class="card classification-card" data-category="Neutral / Other" onclick="selectCategory('Neutral / Other')"><div class="card-title">Neutral / Other</div><div class="card-value" id="neutralOther">0</div></div>
+<div class="card classification-card" data-category="Neutral" onclick="selectCategory('Neutral')"><div class="card-title">Neutral</div><div class="card-value" id="neutralOther">0</div></div>
 </div>
 </section>
 
@@ -189,12 +189,12 @@ async function loadData(){
   setText("expiryDate",futuresData[0].Expiry_Date||"—");setText("refreshTime",futuresData[0].Refresh_Time_IST||"—");
   ["Long Buildup","Short Buildup","Short Covering","Long Unwinding","Neutral / Other"].forEach((cat,i)=>{
    const ids=["longBuildup","shortBuildup","shortCovering","longUnwinding","neutralOther"];
-   setText(ids[i],classificationData.filter(r=>r.Classification===cat).length);
+   setText(ids[i],classificationData.filter(r=>r.Classification===cat || (cat==="Neutral" && (r.Classification==="Neutral / Other" || r.Classification==="Neutral / Mixed"))).length);
   });
   status.textContent=`Data loaded successfully • ${futuresData.length} futures • classification date ${classDate} • delivery data ${deliveryHistoryData.length?latestDate(deliveryHistoryData):"awaiting refresh"}`;
   status.className="message success";buildClassificationChanges();configurePageView();
   const requested=new URLSearchParams(window.location.search).get("classification");
-  const allowed=["Long Buildup","Short Buildup","Short Covering","Long Unwinding"];
+  const allowed=["Long Buildup","Short Buildup","Short Covering","Long Unwinding","Neutral"];
   if(requested&&allowed.includes(requested))selectCategory(requested);else renderTable();
  }catch(e){status.textContent="OI data loading error: "+e.message;status.className="message error";console.error(e)}
 }
