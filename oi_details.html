@@ -99,7 +99,7 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 <h2 id="tableHeading">All Classified Futures</h2>
 <div class="controls">
 <input id="tableSearch" placeholder="Search within table by symbol..." oninput="renderTable()">
-<select id="sortBy" onchange="renderTable()"><option value="Symbol">Sort by Symbol</option><option value="Price_Change_Pct">Sort by Price Change</option><option value="OI_Change_Pct">Sort by OI Change</option></select>
+<select id="sortBy" onchange="renderTable()"><option value="OI_Change_Pct">Rank by OI Change</option><option value="Symbol">Sort by Symbol</option><option value="Price_Change_Pct">Sort by Price Change</option></select>
 <button onclick="downloadCSV()">Download CSV</button><button class="secondary" onclick="selectCategory('All')">Show All</button>
 </div>
 <div class="small-note" id="tableInfo"></div>
