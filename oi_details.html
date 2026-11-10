@@ -110,11 +110,8 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 "use strict";
 const SNAPSHOT_URL="data/front_month_snapshot.csv";
 const CLASSIFICATION_URL="data/oi_classification_history.csv";
-const INSTITUTIONAL_BASE="institutional_data/";
 let futuresData=[],classificationHistoryData=[],classificationData=[],dailyChanges=[];
 let selectedCategory="All";
-let cashRows=[],volumeRows=[],oiRows=[],fiiRows=[];
-let cashIndex=0,volumeIndex=0,oiIndex=0,fiiIndex=0;
 
 function parseCSV(text){
  const rows=[];let row=[],value="",quoted=false;text=text.replace(/^\uFEFF/,"");
