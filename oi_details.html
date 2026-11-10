@@ -205,7 +205,8 @@ function buildClassificationChanges(){
  const old=classificationHistoryData.filter(r=>date(r.Trade_Date)===prev),now=classificationHistoryData.filter(r=>date(r.Trade_Date)===cur);
  dailyChanges=now.filter(r=>{const p=old.find(x=>x.Symbol===r.Symbol&&date(x.Expiry_Date)===date(r.Expiry_Date));return p&&p.Classification!==r.Classification});
  setText("classificationChangeCount",dailyChanges.length);setText("classificationChangesMessage",`Comparing ${prev} with ${cur} • matched ${now.filter(r=>old.some(x=>x.Symbol===r.Symbol&&date(x.Expiry_Date)===date(r.Expiry_Date))).length}`);
- dailyChanges.sort((a,b)=>a.Symbol.localeCompare(b.Symbol)).forEach(r=>{const p=old.find(x=>x.Symbol===r.Symbol&&date(x.Expiry_Date)===date(r.Expiry_Date));body.insertAdjacentHTML("beforeend",`<tr><td><b>${esc(r.Symbol)}</b></td><td>${esc(p.Classification)}</td><td>${esc(r.Classification)}</td><td class="${cls(r.Price_Change_Pct)}">${pct(r.Price_Change_Pct)}</td><td class="${cls(r.OI_Change_Pct)}">${pct(r.OI_Change_Pct)}</td></tr>`)});
+ const categoryOrder={"Long Buildup":1,"Short Buildup":2,"Short Covering":3,"Long Unwinding":4,"Neutral":5};
+ dailyChanges.sort((a,b)=>(categoryOrder[a.Classification]??99)-(categoryOrder[b.Classification]??99)||a.Symbol.localeCompare(b.Symbol)).forEach(r=>{const p=old.find(x=>x.Symbol===r.Symbol&&date(x.Expiry_Date)===date(r.Expiry_Date));body.insertAdjacentHTML("beforeend",`<tr><td><b>${esc(r.Symbol)}</b></td><td>${esc(p.Classification)}</td><td>${esc(r.Classification)}</td><td class="${cls(r.Price_Change_Pct)}">${pct(r.Price_Change_Pct)}</td><td class="${cls(r.OI_Change_Pct)}">${pct(r.OI_Change_Pct)}</td></tr>`)});
 }
 function deliveryMetrics(symbol, currentDate){
  const current=deliveryHistoryData.find(x=>date(x.Trade_Date)===currentDate&&x.Symbol===symbol);
