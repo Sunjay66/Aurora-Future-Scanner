@@ -24,7 +24,7 @@ thead th{position:sticky;top:0;z-index:5;background:#e8edf5;box-shadow:0 1px 0 v
 table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
 th,td{padding:10px;text-align:left;border-bottom:1px solid var(--border)}
 .volume-col{min-width:82px}.delivery-col{min-width:96px}.volume-col small,.delivery-col small{display:block;font-size:11px;font-weight:600;white-space:normal;margin-top:3px}.average-col{min-width:112px;white-space:normal!important;line-height:1.2}.average-col small{display:block!important;font-size:11px;font-weight:600;white-space:normal!important;margin-top:3px}
-th{background:#e8edf5;position:sticky;top:0;z-index:1;white-space:normal;line-height:1.2;vertical-align:bottom;min-width:76px}th .th-main,th .th-sub{display:block}th .th-sub{font-size:11px;font-weight:600;margin-top:3px}th.volume-col{min-width:82px}th.delivery-col{min-width:104px}tbody tr:hover{background:#f4f8fc}
+th{background:#e8edf5;position:sticky;top:0;z-index:1;white-space:normal;line-height:1.2;vertical-align:bottom;min-width:76px}th.average-col .th-main,th.average-col .th-sub{display:block!important;white-space:normal!important}th.average-col .th-sub{font-size:11px;font-weight:600;margin-top:3px}th .th-main,th .th-sub{display:block}th .th-sub{font-size:11px;font-weight:600;margin-top:3px}th.volume-col{min-width:82px}th.delivery-col{min-width:104px}tbody tr:hover{background:#f4f8fc}
 .positive{color:var(--green);font-weight:bold}.negative{color:var(--red);font-weight:bold}.neutral{color:#687386}
 .small-note{color:#5c6678;font-size:13px}
 .classification-card{cursor:pointer;transition:.15s}.classification-card:hover{transform:translateY(-2px);border-color:#7896bd}
@@ -106,7 +106,7 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1;white-space:normal;line-he
 <button onclick="downloadCSV()">Download CSV</button><button class="secondary" onclick="selectCategory('All')">Show All</button>
 </div>
 <div class="small-note" id="tableInfo"></div>
-<div class="table-wrap"><table><thead><tr><th>Trading Date</th><th>Symbol</th><th>Expiry</th><th>Close Price (₹)</th><th>Price Change (%)</th><th>OI (Contracts)</th><th>OI Change (%)</th><th class="volume-col">Volume<br><small>(Contracts)</small></th><th id="deliveryQtyHeader" class="delivery-col">Delivery Qty<br><small id="deliveryQtyDate">09-11-2026</small></th><th id="deliveryPctHeader" class="delivery-col">Delivery %<br><small id="deliveryPctDate">09-11-2026</small></th><th class="average-col">Prev. 5-session<br><small>Avg %</small></th><th class="average-col">Prev. 10-session<br><small>Avg %</small></th></tr></thead><tbody id="futuresBody"></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Trading Date</th><th>Symbol</th><th>Expiry</th><th>Close Price (₹)</th><th>Price Change (%)</th><th>OI (Contracts)</th><th>OI Change (%)</th><th class="volume-col">Volume<br><small>(Contracts)</small></th><th id="deliveryQtyHeader" class="delivery-col">Delivery Qty<br><small id="deliveryQtyDate">09-11-2026</small></th><th id="deliveryPctHeader" class="delivery-col">Delivery %<br><small id="deliveryPctDate">09-11-2026</small></th><th class="average-col"><span class="th-main">Prev. 5-session</span><span class="th-sub">Avg %</span></th><th class="average-col"><span class="th-main">Prev. 10-session</span><span class="th-sub">Avg %</span></th></tr></thead><tbody id="futuresBody"></tbody></table></div>
 </section>
 
 <script>
