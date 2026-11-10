@@ -15,7 +15,7 @@ header h1{margin:0 0 8px;font-size:30px}header p{margin:0;font-size:15px}
 .refresh small{color:var(--muted);font-size:13px}
 section{margin:20px 0 24px}h2{font-size:21px;margin:0 0 12px;color:var(--navy)}
 .sub{font-size:12px;color:var(--muted);margin:-5px 0 12px}
-.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
 .card{display:block;background:#fff;border:1px solid var(--border);border-radius:11px;padding:17px;color:var(--text);text-decoration:none;box-shadow:0 2px 5px rgba(0,0,0,.03);transition:transform .12s,border-color .12s}
 .card:hover{transform:translateY(-2px);border-color:#8ea4c1}
 .card .name{font-size:14px;color:#526078;margin-bottom:9px}.card .value{font-size:27px;font-weight:bold;color:var(--navy)}.card .hint{font-size:12px;margin-top:8px;color:var(--muted)}
@@ -63,6 +63,7 @@ footer{text-align:center;color:var(--muted);font-size:11px;margin:20px 0 8px}
 <a class="card" href="oi_details.html?classification=Short%20Buildup"><div class="name">Short Buildup</div><div class="value" id="shortBuildup">—</div><div class="hint red">View stocks →</div></a>
 <a class="card" href="oi_details.html?classification=Short%20Covering"><div class="name">Short Covering</div><div class="value" id="shortCovering">—</div><div class="hint green">View stocks →</div></a>
 <a class="card" href="oi_details.html?classification=Long%20Unwinding"><div class="name">Long Unwinding</div><div class="value" id="longUnwinding">—</div><div class="hint red">View stocks →</div></a>
+<a class="card" href="oi_details.html?classification=Neutral"><div class="name">Neutral</div><div class="value" id="neutral">—</div><div class="hint">View stocks →</div></a>
 </div>
 </section>
 
@@ -148,6 +149,7 @@ async function main(){
  const current=history.filter(r=>r.Trade_Date===hd);
  const categories=[["Long Buildup","longBuildup"],["Short Buildup","shortBuildup"],["Short Covering","shortCovering"],["Long Unwinding","longUnwinding"]];
  categories.forEach(([c,id])=>document.getElementById(id).textContent=current.filter(r=>r.Classification===c).length.toLocaleString("en-IN"));
+ document.getElementById("neutral").textContent=current.filter(r=>["Neutral","Neutral / Other","Neutral / Mixed"].includes(r.Classification)).length.toLocaleString("en-IN");
  const dates=[...new Set(history.map(r=>r.Trade_Date))].sort(),prev=dates.at(-2);
  let changes=0;if(prev&&hd){const old=history.filter(r=>r.Trade_Date===prev),now=history.filter(r=>r.Trade_Date===hd);changes=now.filter(r=>{const p=old.find(x=>x.Symbol===r.Symbol&&x.Expiry_Date===r.Expiry_Date);return p&&p.Classification!==r.Classification}).length;document.getElementById("changeDates").textContent="Comparing "+prev+" with "+hd}
  document.getElementById("changeCount").textContent=changes.toLocaleString("en-IN");
