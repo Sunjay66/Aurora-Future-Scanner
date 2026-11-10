@@ -28,6 +28,7 @@ section{margin:20px 0 24px}h2{font-size:21px;margin:0 0 12px;color:var(--navy)}
 th,td{padding:10px 11px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
 th{background:#edf1f7;color:#34445b;font-weight:bold}th:first-child,td:first-child{text-align:left}
 tbody tr:last-child td{border-bottom:0}
+.net-row td{background:#edf3fa;font-weight:bold;border-top:2px solid #c8d5e5}.net-row td:first-child{color:var(--navy)}
 .group-head{background:#e4eaf3;text-align:center;font-weight:bold;color:var(--navy)}
 .positive{color:var(--green);font-weight:bold}.negative{color:var(--red);font-weight:bold}
 .period-label{display:inline-block;background:#eef2f7;color:#4c5c72;padding:4px 8px;border-radius:20px;font-size:11px;margin-bottom:8px}
@@ -135,10 +136,13 @@ const latest=rows=>rows.map(r=>r.Trade_Date).filter(Boolean).sort().at(-1)||"";
 function weekStart(s){const d=new Date(s+"T12:00:00Z");d.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));return d.toISOString().slice(0,10)}
 function renderCash(rows){
  const d=latest(rows);if(!d)throw Error("Cash-market report has no trading date");
- const latestD=new Date(d+"T12:00:00Z"),month=d.slice(0,7),week=weekStart(d);
+ const month=d.slice(0,7),week=weekStart(d);
  const periods={daily:rows.filter(r=>r.Trade_Date===d),weekly:rows.filter(r=>weekStart(r.Trade_Date)===week),monthly:rows.filter(r=>r.Trade_Date.slice(0,7)===month)};
  const out=["FII/FPI","DII"].map(p=>{const sums={};Object.keys(periods).forEach(k=>sums[k]=periods[k].filter(r=>r.Category===p).reduce((a,r)=>a+num(r.Net_Value_Cr),0));return{p,...sums}});
- document.getElementById("cashSummary").innerHTML=out.map(r=>'<tr><td><b>'+r.p+'</b></td><td class="'+cls(r.daily)+'">'+money(r.daily)+'</td><td class="'+cls(r.weekly)+'">'+money(r.weekly)+'</td><td class="'+cls(r.monthly)+'">'+money(r.monthly)+'</td></tr>').join("");
+ const combined={daily:out.reduce((a,r)=>a+r.daily,0),weekly:out.reduce((a,r)=>a+r.weekly,0),monthly:out.reduce((a,r)=>a+r.monthly,0)};
+ const rowsHtml=out.map(r=>'<tr><td><b>'+r.p+'</b></td><td class="'+cls(r.daily)+'">'+money(r.daily)+'</td><td class="'+cls(r.weekly)+'">'+money(r.weekly)+'</td><td class="'+cls(r.monthly)+'">'+money(r.monthly)+'</td></tr>').join("");
+ const total='<tr class="net-row"><td>Net Institutional Flow (FII + DII)</td><td class="'+cls(combined.daily)+'">'+money(combined.daily)+'</td><td class="'+cls(combined.weekly)+'">'+money(combined.weekly)+'</td><td class="'+cls(combined.monthly)+'">'+money(combined.monthly)+'</td></tr>';
+ document.getElementById("cashSummary").innerHTML=rowsHtml+total;
 }
 function renderOiPlaceholder(rows){const d=latest(rows);if(d){document.getElementById("oiPending").textContent="Latest participant OI position available through "+d+". Historical daily snapshots are not yet stored, so daily, weekly and monthly changes are intentionally withheld."}}
 async function main(){
