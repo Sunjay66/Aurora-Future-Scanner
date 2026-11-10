@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurora Futures OI Details</title>
+<style>
+:root{--navy:#172d4b;--bg:#f3f6fa;--white:#fff;--border:#dbe3ed;--green:#008c45;--red:#d62828;--text:#172033}
+*{box-sizing:border-box}
+body{margin:0;padding:18px;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+header{background:var(--navy);color:#fff;padding:28px;border-radius:14px;margin-bottom:22px}
+header h1{margin:0 0 10px;font-size:32px}header p{margin:0;font-size:17px}
+section{margin-bottom:24px}h2{font-size:23px;margin:24px 0 14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.card-title{color:#526078;font-size:14px;margin-bottom:12px}.card-value{font-size:25px;font-weight:bold}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+input,select,button{padding:12px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px}
+input{flex:1;min-width:220px}button{cursor:pointer;background:var(--navy);color:white}button.secondary{background:#fff;color:var(--navy)}
+.message{padding:12px;border-radius:8px;background:#fff;margin:12px 0}.error{color:var(--red)}.success{color:var(--green)}
+.table-wrap{overflow-x:auto;background:#fff;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
+th,td{padding:10px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:#f4f8fc}
+.positive{color:var(--green);font-weight:bold}.negative{color:var(--red);font-weight:bold}.neutral{color:#687386}
+.small-note{color:#5c6678;font-size:13px}
+.classification-card{cursor:pointer;transition:.15s}.classification-card:hover{transform:translateY(-2px);border-color:#7896bd}
+.classification-card.active{border:2px solid var(--navy);background:#eaf1fb}
+.lookup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.lookup-item{background:#f5f8fc;border:1px solid var(--border);border-radius:8px;padding:12px}
+.lookup-item strong{display:block;margin-bottom:6px;color:#5c6678;font-size:13px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
+.tab-btn{background:#e5ebf3;color:var(--navy);font-weight:bold;border:1px solid #ccd7e5}
+.tab-btn.active{background:var(--navy);color:#fff}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.pager{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}
+.pager button{padding:9px 14px}.pager .date-label{font-weight:bold}
+.section-banner{background:#eaf1fb;border:1px solid #d1dfef;padding:12px;border-radius:8px;margin:10px 0}
+@media(max-width:600px){body{padding:9px}header{padding:20px}header h1{font-size:25px}}
+.refresh-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 20px}
+.refresh-link{display:inline-block;padding:12px 18px;border-radius:8px;background:#008c45;color:#fff;text-decoration:none;font-weight:bold;border:1px solid #00783b}
+.refresh-link:hover{background:#00783b}
+.refresh-help{font-size:13px;color:#526078;line-height:1.45}
+
+
+.back-link{display:inline-block;margin:0 0 16px;padding:10px 15px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--navy);text-decoration:none;font-weight:bold}
+.back-link:hover{background:#eaf1fb}
+</style>
+</head>
+<body>
+<a class="back-link" href="index.html">← Back to Dashboard</a>
+<header>
+<h1>Aurora Futures OI Details</h1>
+<p>Stock lookup • Daily price and Open Interest classification • Detailed futures tables</p>
+</header>
+
+<div class="refresh-bar">
+<a class="refresh-link" href="index.html">← Return to Dashboard</a>
+<span class="refresh-help">Detailed stock lookup and classification view. Use the dashboard to initiate a data refresh.</span>
+</div>
+
+<section>
+<div class="cards">
+<div class="card"><div class="card-title">Total Stock Futures</div><div class="card-value" id="totalCount">—</div></div>
+<div class="card"><div class="card-title">Bhavcopy / Trading Date</div><div class="card-value" id="bhavDate">—</div></div>
+<div class="card"><div class="card-title">Front-Month Expiry</div><div class="card-value" id="expiryDate">—</div></div>
+<div class="card"><div class="card-title">Last Refresh (IST)</div><div class="card-value" id="refreshTime">—</div></div>
+</div>
+<div id="status" class="message">Loading dashboard data...</div>
+</section>
+
+<section>
+<h2>Stock Search / Quick Lookup</h2>
+<div class="controls">
+<input id="stockSearch" placeholder="Enter stock symbol (e.g. ABB, RELIANCE, HDFCBANK)" autocomplete="off">
+<button onclick="findStock()">Find Stock</button><button class="secondary" onclick="clearSearch()">Clear</button>
+</div><div id="lookupResult"></div>
+</section>
+
+<section>
+<h2>Open Interest Classification — Latest Trading Date</h2>
+<div class="cards">
+<div class="card classification-card" data-category="Long Buildup" onclick="selectCategory('Long Buildup')"><div class="card-title">Long Buildup</div><div class="card-value" id="longBuildup">0</div></div>
+<div class="card classification-card" data-category="Short Buildup" onclick="selectCategory('Short Buildup')"><div class="card-title">Short Buildup</div><div class="card-value" id="shortBuildup">0</div></div>
+<div class="card classification-card" data-category="Short Covering" onclick="selectCategory('Short Covering')"><div class="card-title">Short Covering</div><div class="card-value" id="shortCovering">0</div></div>
+<div class="card classification-card" data-category="Long Unwinding" onclick="selectCategory('Long Unwinding')"><div class="card-title">Long Unwinding</div><div class="card-value" id="longUnwinding">0</div></div>
+<div class="card classification-card" data-category="Neutral / Other" onclick="selectCategory('Neutral / Other')"><div class="card-title">Neutral / Other</div><div class="card-value" id="neutralOther">0</div></div>
+</div>
+</section>
+
+<section>
+<h2>Daily Classification Changes</h2>
+<div class="card"><div class="card-title">Stocks Changed Classification</div><div class="card-value" id="classificationChangeCount">0</div></div>
+<div id="classificationChangesMessage" class="message">Loading classification changes...</div>
+<div class="table-wrap"><table><thead><tr><th>Symbol</th><th>Previous Classification</th><th>Current Classification</th><th>Price Change (%)</th><th>OI Change (%)</th></tr></thead><tbody id="classificationChangesBody"></tbody></table></div>
+</section>
+
+<section>
+<h2 id="tableHeading">All Classified Futures</h2>
+<div class="controls">
+<input id="tableSearch" placeholder="Search within table by symbol..." oninput="renderTable()">
+<select id="sortBy" onchange="renderTable()"><option value="Symbol">Sort by Symbol</option><option value="Price_Change_Pct">Sort by Price Change</option><option value="OI_Change_Pct">Sort by OI Change</option></select>
+<button onclick="downloadCSV()">Download CSV</button><button class="secondary" onclick="selectCategory('All')">Show All</button>
+</div>
+<div class="small-note" id="tableInfo"></div>
+<div class="table-wrap"><table><thead><tr><th>Symbol</th><th>Expiry</th><th>Close Price (₹)</th><th>Price Change (%)</th><th>OI (Contracts)</th><th>OI Change (%)</th><th>Volume (Contracts)</th><th>Classification</th></tr></thead><tbody id="futuresBody"></tbody></table></div>
+</section>
+
+<script>
+"use strict";
+const SNAPSHOT_URL="data/front_month_snapshot.csv";
+const CLASSIFICATION_URL="data/oi_classification_history.csv";
+const INSTITUTIONAL_BASE="institutional_data/";
+let futuresData=[],classificationHistoryData=[],classificationData=[],dailyChanges=[];
+let selectedCategory="All";
+let cashRows=[],volumeRows=[],oiRows=[],fiiRows=[];
+let cashIndex=0,volumeIndex=0,oiIndex=0,fiiIndex=0;
+
+function parseCSV(text){
+ const rows=[];let row=[],value="",quoted=false;text=text.replace(/^\uFEFF/,"");
+ for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1];
+  if(c==='"'&&quoted&&n==='"'){value+='"';i++}
+  else if(c==='"')quoted=!quoted;
+  else if(c===","&&!quoted){row.push(value);value=""}
+  else if((c==="\n"||c==="\r")&&!quoted){if(c==="\r"&&n==="\n")i++;row.push(value);if(row.some(x=>x.trim()))rows.push(row);row=[];value=""}
+  else value+=c;
+ }
+ if(value.length||row.length){row.push(value);if(row.some(x=>x.trim()))rows.push(row)}
+ if(!rows.length)return [];
+ const headers=rows[0].map(x=>x.trim());
+ return rows.slice(1).map(vals=>{const o={};headers.forEach((h,i)=>o[h]=(vals[i]??"").trim());return o});
+}
+function num(v){if(v===undefined||v===null||String(v).trim()==="")return null;const n=Number(v);return Number.isFinite(n)?n:null}
+function fmt(v){const n=num(v);return n===null?"—":n.toLocaleString("en-IN",{maximumFractionDigits:2})}
+function pct(v){const n=num(v);return n===null?"—":(n>0?"+":"")+n.toFixed(2)+"%"}
+function cls(v){const n=num(v);return n===null||n===0?"neutral":n>0?"positive":"negative"}
+function date(v){return String(v||"").slice(0,10)}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function latest(rows,key="Trade_Date"){return rows.reduce((m,r)=>date(r[key])>m?date(r[key]):m,"")}
+function latestDate(rows){return latest(rows,"Trade_Date")}
+function filled(rows){return rows.filter(r=>Object.values(r).some(v=>String(v??"").trim()!==""))}
+function setText(id,v){document.getElementById(id).textContent=v}
+function selectCategory(category){selectedCategory=category;document.querySelectorAll(".classification-card").forEach(c=>c.classList.toggle("active",c.dataset.category===category));setText("tableHeading",category==="All"?"All Classified Futures":category+" — Latest Trading Date");renderTable()}
+async function getCSV(url){const res=await fetch(url+"?t="+Date.now());if(!res.ok)throw new Error(url+" HTTP "+res.status);return parseCSV(await res.text())}
+async function loadData(){
+ const status=document.getElementById("status");status.textContent="Loading dashboard data...";
+ try{
+  [futuresData,classificationHistoryData]=await Promise.all([getCSV(SNAPSHOT_URL),getCSV(CLASSIFICATION_URL)]);
+  if(!futuresData.length||!classificationHistoryData.length)throw new Error("Required OI CSV has no rows");
+  const snapDate=latestDate(futuresData),classDate=latestDate(classificationHistoryData);
+  classificationData=classificationHistoryData.filter(r=>date(r.Trade_Date)===classDate);
+  setText("totalCount",futuresData.length);setText("bhavDate",futuresData[0].Bhavcopy_Date||futuresData[0].Trade_Date||"—");
+  setText("expiryDate",futuresData[0].Expiry_Date||"—");setText("refreshTime",futuresData[0].Refresh_Time_IST||"—");
+  ["Long Buildup","Short Buildup","Short Covering","Long Unwinding","Neutral / Other"].forEach((cat,i)=>{
+   const ids=["longBuildup","shortBuildup","shortCovering","longUnwinding","neutralOther"];
+   setText(ids[i],classificationData.filter(r=>r.Classification===cat).length);
+  });
+  status.textContent=`Data loaded successfully • ${futuresData.length} futures • classification date ${classDate}`;
+  status.className="message success";buildClassificationChanges();renderTable();
+ }catch(e){status.textContent="OI data loading error: "+e.message;status.className="message error";console.error(e)}
+}
+function buildClassificationChanges(){
+ const dates=[...new Set(classificationHistoryData.map(r=>date(r.Trade_Date)))].sort();
+ const prev=dates[dates.length-2],cur=dates[dates.length-1],body=document.getElementById("classificationChangesBody");body.innerHTML="";
+ if(!prev||!cur){setText("classificationChangeCount",0);setText("classificationChangesMessage","Not enough dates to compare.");return}
+ const old=classificationHistoryData.filter(r=>date(r.Trade_Date)===prev),now=classificationHistoryData.filter(r=>date(r.Trade_Date)===cur);
+ dailyChanges=now.filter(r=>{const p=old.find(x=>x.Symbol===r.Symbol&&date(x.Expiry_Date)===date(r.Expiry_Date));return p&&p.Classification!==r.Classification});
+ setText("classificationChangeCount",dailyChanges.length);setText("classificationChangesMessage",`Comparing ${prev} with ${cur} • matched ${now.filter(r=>old.some(x=>x.Symbol===r.Symbol&&date(x.Expiry_Date)===date(r.Expiry_Date))).length}`);
+ dailyChanges.sort((a,b)=>a.Symbol.localeCompare(b.Symbol)).forEach(r=>{const p=old.find(x=>x.Symbol===r.Symbol&&date(x.Expiry_Date)===date(r.Expiry_Date));body.insertAdjacentHTML("beforeend",`<tr><td><b>${esc(r.Symbol)}</b></td><td>${esc(p.Classification)}</td><td>${esc(r.Classification)}</td><td class="${cls(r.Price_Change_Pct)}">${pct(r.Price_Change_Pct)}</td><td class="${cls(r.OI_Change_Pct)}">${pct(r.OI_Change_Pct)}</td></tr>`)});
+}
+function renderTable(){
+ const search=document.getElementById("tableSearch").value.trim().toUpperCase(),sort=document.getElementById("sortBy").value;
+ let rows=classificationData.filter(r=>(selectedCategory==="All"||r.Classification===selectedCategory)&&(!search||r.Symbol.toUpperCase().includes(search)));
+ rows.sort((a,b)=>sort==="Symbol"?a.Symbol.localeCompare(b.Symbol):(num(b[sort])??-Infinity)-(num(a[sort])??-Infinity));
+ setText("tableInfo",`Showing ${rows.length} stocks • Date ${latestDate(classificationData)} • ${selectedCategory}`);
+ const body=document.getElementById("futuresBody");body.innerHTML="";
+ rows.forEach(r=>body.insertAdjacentHTML("beforeend",`<tr><td><b>${esc(r.Symbol)}</b></td><td>${esc(r.Expiry_Date)}</td><td>${fmt(r.Close_Price)}</td><td class="${cls(r.Price_Change_Pct)}">${pct(r.Price_Change_Pct)}</td><td>${fmt(r.Open_Interest)}</td><td class="${cls(r.OI_Change_Pct)}">${pct(r.OI_Change_Pct)}</td><td>${fmt(r.Volume)}</td><td>${esc(r.Classification)}</td></tr>`));
+}
+function findStock(){
+ const symbol=document.getElementById("stockSearch").value.trim().toUpperCase(),result=document.getElementById("lookupResult");
+ if(!symbol){result.innerHTML='<div class="message error">Enter a stock symbol.</div>';return}
+ const r=classificationData.find(x=>x.Symbol.toUpperCase()===symbol);
+ if(!r){result.innerHTML=`<div class="message error">Stock not found: ${esc(symbol)}</div>`;return}
+ const dates=[...new Set(classificationHistoryData.map(x=>date(x.Trade_Date)))].sort(),prevDate=dates[dates.length-2];
+ const p=classificationHistoryData.find(x=>date(x.Trade_Date)===prevDate&&x.Symbol===r.Symbol&&date(x.Expiry_Date)===date(r.Expiry_Date));
+ result.innerHTML=`<div class="card"><h3>${esc(r.Symbol)} — Quick Lookup</h3><div class="lookup-grid">
+ ${[["Current Classification",r.Classification],["Previous Classification",p?.Classification||"Not available"],["Price Change",pct(r.Price_Change_Pct)],["OI Change",pct(r.OI_Change_Pct)],["Close Price (₹)",fmt(r.Close_Price)],["OI (Contracts)",fmt(r.Open_Interest)],["Expiry",r.Expiry_Date],["Volume (Contracts)",fmt(r.Volume)]].map(([k,v])=>`<div class="lookup-item"><strong>${esc(k)}</strong>${esc(v)}</div>`).join("")}</div></div>`;
+ document.getElementById("tableSearch").value=symbol;selectCategory("All");
+}
+function clearSearch(){document.getElementById("stockSearch").value="";document.getElementById("tableSearch").value="";document.getElementById("lookupResult").innerHTML="";selectCategory("All")}
+function downloadCSV(){
+ let rows=classificationData.filter(r=>selectedCategory==="All"||r.Classification===selectedCategory);
+ const q=document.getElementById("tableSearch").value.trim().toUpperCase();if(q)rows=rows.filter(r=>r.Symbol.toUpperCase().includes(q));
+ if(!rows.length){alert("No rows to download");return}
+ const headers=Object.keys(rows[0]),csv=[headers.join(","),...rows.map(r=>headers.map(h=>'"'+String(r[h]??"").replace(/"/g,'""')+'"').join(","))].join("\n");
+ const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="Aurora_OI_"+selectedCategory.replace(/\s/g,"_")+".csv";a.click();URL.revokeObjectURL(url);
+}
+document.getElementById("stockSearch").addEventListener("keydown",e=>{if(e.key==="Enter")findStock()});
+
+loadData();
+
+</script>
+</body>
+</html>
