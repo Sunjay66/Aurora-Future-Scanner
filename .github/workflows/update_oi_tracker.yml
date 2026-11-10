@@ -26,6 +26,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Download latest NSE institutional derivatives reports
+        continue-on-error: true
+        run: |
+          python scripts/update_institutional_derivatives.py
+
       - name: Run Aurora OI Tracker
         run: |
           python scripts/update_oi_tracker.py
@@ -33,15 +38,15 @@ jobs:
       - name: Run OI Classification
         run: |
           python scripts/classify_futures_oi.py
-          
+
       - name: Update NSE delivery history
         run: |
           python scripts/update_delivery_history.py
 
-      - name: Commit updated tracker data
+      - name: Commit updated tracker and institutional data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/
-          git diff --cached --quiet || git commit -m "Update futures OI tracker data"
+          git add data/ institutional_data/ scripts/ requirements.txt
+          git diff --cached --quiet || git commit -m "Refresh Aurora futures and institutional data"
           git push
