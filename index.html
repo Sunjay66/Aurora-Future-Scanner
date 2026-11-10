@@ -87,21 +87,21 @@ footer{text-align:center;color:var(--muted);font-size:11px;margin:20px 0 8px}
 </table></div>
 </div>
 <div class="panel">
-<h3>Derivatives — Index Futures <span id="derivativesDataDate" style="font-size:12px;color:#617087;font-weight:normal"></span></h3>
-<p class="desc">Change in Long and Short Open Interest (%) across daily, weekly and monthly comparison periods.</p>
+<h3>Derivatives — Index Futures <span id="indexOiDataDate" style="font-size:12px;color:#617087;font-weight:normal"></span></h3>
+<p class="desc">Latest available participant-wise open interest position. Contracts, not percentage changes.</p>
 <div class="table-wrap"><table>
-<thead><tr><th>Participant</th><th>Daily Long Δ%</th><th>Daily Short Δ%</th><th>Weekly Long Δ%</th><th>Weekly Short Δ%</th><th>Monthly Long Δ%</th><th>Monthly Short Δ%</th></tr></thead>
-<tbody id="indexOiSummary"><tr><td colspan="7">Historical participant OI data is being established.</td></tr></tbody>
+<thead><tr><th>Participant</th><th>Long OI (Contracts)</th><th>Short OI (Contracts)</th><th>Net OI (Contracts)</th></tr></thead>
+<tbody id="indexOiSummary"><tr><td colspan="4">Loading index-futures OI…</td></tr></tbody>
 </table></div>
 </div>
 <div class="panel">
-<h3>Derivatives — Stock Futures <span style="font-size:12px;color:#617087;font-weight:normal"> </span></h3>
-<p class="desc">Change in Long and Short Open Interest (%) across daily, weekly and monthly comparison periods.</p>
+<h3>Derivatives — Stock Futures <span id="stockOiDataDate" style="font-size:12px;color:#617087;font-weight:normal"></span></h3>
+<p class="desc">Latest available participant-wise open interest position. Contracts, not percentage changes.</p>
 <div class="table-wrap"><table>
-<thead><tr><th>Participant</th><th>Daily Long Δ%</th><th>Daily Short Δ%</th><th>Weekly Long Δ%</th><th>Weekly Short Δ%</th><th>Monthly Long Δ%</th><th>Monthly Short Δ%</th></tr></thead>
-<tbody id="stockOiSummary"><tr><td colspan="7">Historical participant OI data is being established.</td></tr></tbody>
+<thead><tr><th>Participant</th><th>Long OI (Contracts)</th><th>Short OI (Contracts)</th><th>Net OI (Contracts)</th></tr></thead>
+<tbody id="stockOiSummary"><tr><td colspan="4">Loading stock-futures OI…</td></tr></tbody>
 </table></div>
-<div class="pending" id="oiPending">Historical participant-wise OI snapshots are not yet available. We will build the daily history before calculating daily, weekly and monthly percentage changes. No estimated figures will be shown.</div>
+<div class="pending" id="oiPending">Historical participant snapshots are not yet stored. Daily, weekly and monthly percentage changes will be shown only after comparable historical records are available.</div>
 </div>
 </section>
 
@@ -140,7 +140,25 @@ function renderCash(rows){
  document.getElementById("cashSummary").innerHTML=rowsHtml+total;
  document.getElementById("cashDataDate").textContent=" • Source through "+d;
 }
-function renderOiPlaceholder(rows){const d=latest(rows);if(d){document.getElementById("derivativesDataDate").textContent=" • Source through "+d;document.getElementById("oiPending").textContent="Latest participant OI position available through "+d+". This is earlier than the latest OI stock-classification date where applicable. Historical participant snapshots are not yet stored, so daily, weekly and monthly changes are intentionally withheld."}}
+function renderParticipantOi(rows){
+ const order=["FII","DII","Client","Pro"];
+ const segments=[{name:"Index Futures",body:"indexOiSummary",date:"indexOiDataDate"},{name:"Stock Futures",body:"stockOiSummary",date:"stockOiDataDate"}];
+ segments.forEach(s=>{
+  const dated=rows.filter(r=>r.Segment===s.name&&r.Trade_Date);
+  const d=latest(dated);
+  document.getElementById(s.date).textContent=d?" • Source through "+d:" • No source date";
+  const body=document.getElementById(s.body);
+  const current=dated.filter(r=>r.Trade_Date===d).sort((a,b)=>order.indexOf(a.Participant)-order.indexOf(b.Participant));
+  if(!current.length){body.innerHTML='<tr><td colspan="4">No participant OI records available.</td></tr>';return;}
+  body.innerHTML=current.map(r=>{
+   const long=Number(r.Long_OI_Contracts),short=Number(r.Short_OI_Contracts),net=Number(r.Net_OI_Contracts);
+   const fmt=v=>Number.isFinite(v)?v.toLocaleString("en-IN"):"—";
+   return '<tr><td><b>'+r.Participant+'</b></td><td>'+fmt(long)+'</td><td>'+fmt(short)+'</td><td class="'+(net>0?'positive':net<0?'negative':'')+'">'+fmt(net)+'</td></tr>';
+  }).join("");
+ });
+ const allDates=rows.map(r=>r.Trade_Date).filter(Boolean).sort();
+ document.getElementById("oiPending").textContent=allDates.length?"Participant positions shown above are the latest available source records. Source date: "+allDates.at(-1)+". Daily, weekly and monthly percentage changes remain withheld until historical participant snapshots are available.":"No participant OI source records are available.";
+}
 async function main(){
  try{
  const HISTORY_URL="https://cdn.jsdelivr.net/gh/Sunjay66/Aurora-Future-Scanner@b1389ababae0750533b679a7343e8cb51c6111de/data/oi_classification_history.csv";
@@ -154,7 +172,7 @@ async function main(){
  const dates=[...new Set(history.map(r=>r.Trade_Date))].sort(),prev=dates.at(-2);
  let changes=0;if(prev&&hd){const old=history.filter(r=>r.Trade_Date===prev),now=history.filter(r=>r.Trade_Date===hd);changes=now.filter(r=>{const p=old.find(x=>x.Symbol===r.Symbol&&x.Expiry_Date===r.Expiry_Date);return p&&p.Classification!==r.Classification}).length;document.getElementById("changeDates").textContent="Comparing "+prev+" with "+hd}
  document.getElementById("changeCount").textContent=changes.toLocaleString("en-IN");
- renderCash(cash);renderOiPlaceholder(oi);
+ renderCash(cash);renderParticipantOi(oi);
  document.getElementById("loadStatus").textContent="Dashboard summaries loaded • OI classification date "+hd+" • Cash-market date "+latest(cash);
  }catch(e){document.getElementById("loadStatus").textContent="Some dashboard summaries could not be loaded: "+e.message;console.error(e)}
 }
