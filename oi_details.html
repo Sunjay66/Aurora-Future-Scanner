@@ -103,7 +103,7 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 <button onclick="downloadCSV()">Download CSV</button><button class="secondary" onclick="selectCategory('All')">Show All</button>
 </div>
 <div class="small-note" id="tableInfo"></div>
-<div class="table-wrap"><table><thead><tr><th>Trading Date</th><th>Symbol</th><th>Expiry</th><th>Close Price (₹)</th><th>Price Change (%)</th><th>OI (Contracts)</th><th>OI Change (%)</th><th>Volume (Contracts)</th><th>Delivery Qty</th><th>Delivery %</th><th>Prev. 5-session Avg %</th><th>Prev. 10-session Avg %</th><th>Classification</th></tr></thead><tbody id="futuresBody"></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Trading Date</th><th>Symbol</th><th>Expiry</th><th>Close Price (₹)</th><th>Price Change (%)</th><th>OI (Contracts)</th><th>OI Change (%)</th><th>Volume (Contracts)</th><th>Delivery Qty</th><th>Delivery %</th><th>Prev. 5-session Avg %</th><th>Prev. 10-session Avg %</th></tr></thead><tbody id="futuresBody"></tbody></table></div>
 </section>
 
 <script>
@@ -218,7 +218,7 @@ function renderTable(){
  rows.sort((a,b)=>{if(sort==="Symbol")return a.Symbol.localeCompare(b.Symbol);if(sort==="OI_Change_Pct"&&(selectedCategory==="Short Covering"||selectedCategory==="Long Unwinding"))return Math.abs(num(b[sort])||0)-Math.abs(num(a[sort])||0);return (num(b[sort])??-Infinity)-(num(a[sort])??-Infinity)});
  setText("tableInfo",`Showing ${rows.length} stocks • Date ${latestDate(classificationData)} • ${selectedCategory}`);
  const body=document.getElementById("futuresBody");body.innerHTML="";
- rows.forEach(r=>{const d=deliveryMetrics(r.Symbol,latestDate(classificationData));body.insertAdjacentHTML("beforeend",`<tr><td>${esc(latestDate(classificationData))}</td><td><b>${esc(r.Symbol)}</b></td><td>${esc(r.Expiry_Date)}</td><td>${fmt(r.Close_Price)}</td><td class="${cls(r.Price_Change_Pct)}">${pct(r.Price_Change_Pct)}</td><td>${fmt(r.Open_Interest)}</td><td class="${cls(r.OI_Change_Pct)}">${pct(r.OI_Change_Pct)}</td><td>${fmt(r.Volume)}</td><td>${fmt(d.qty)}</td><td>${pct(d.pct)}</td><td>${pct(d.avg5)}</td><td>${pct(d.avg10)}</td><td>${esc(r.Classification)}</td></tr>`)});
+ rows.forEach(r=>{const d=deliveryMetrics(r.Symbol,latestDate(classificationData));body.insertAdjacentHTML("beforeend",`<tr><td>${esc(latestDate(classificationData))}</td><td><b>${esc(r.Symbol)}</b></td><td>${esc(r.Expiry_Date)}</td><td>${fmt(r.Close_Price)}</td><td class="${cls(r.Price_Change_Pct)}">${pct(r.Price_Change_Pct)}</td><td>${fmt(r.Open_Interest)}</td><td class="${cls(r.OI_Change_Pct)}">${pct(r.OI_Change_Pct)}</td><td>${fmt(r.Volume)}</td><td>${fmt(d.qty)}</td><td>${pct(d.pct)}</td><td>${pct(d.avg5)}</td><td>${pct(d.avg10)}</td></tr>`)});
 }
 function findStock(){
  const symbol=document.getElementById("stockSearch").value.trim().toUpperCase(),result=document.getElementById("lookupResult");
