@@ -209,11 +209,27 @@ function buildClassificationChanges(){
 }
 function deliveryMetrics(symbol, currentDate){
  const current=deliveryHistoryData.find(x=>date(x.Trade_Date)===currentDate&&x.Symbol===symbol);
- const regularDates=[...new Set(deliveryHistoryData.filter(x=>x.Session_Type!=="Muhurat"&&date(x.Trade_Date)<currentDate).map(x=>date(x.Trade_Date)))].sort().slice(-10);
- const values=regularDates.map(d=>deliveryHistoryData.find(x=>date(x.Trade_Date)===d&&x.Symbol===symbol)).filter(Boolean).map(x=>num(x.Delivery_Pct)).filter(x=>x!==null);
- const avg5=values.length>=5?values.slice(-5).reduce((a,b)=>a+b,0)/5:null;
- const avg10=values.length>=10?values.slice(-10).reduce((a,b)=>a+b,0)/10:null;
- return {qty:current?.Deliverable_Quantity||null,pct:current?.Delivery_Pct||null,avg5,avg10};
+ // Use the last completed regular market sessions strictly before currentDate.
+ // Require a record for every one of those sessions; never silently average
+ // older/partial observations when a stock is missing a session.
+ const regularDates=[...new Set(deliveryHistoryData
+  .filter(x=>x.Session_Type==="Regular"&&date(x.Trade_Date)<currentDate)
+  .map(x=>date(x.Trade_Date)))].sort();
+ const averageFor=(count)=>{
+  const requiredDates=regularDates.slice(-count);
+  if(requiredDates.length<count)return null;
+  const values=requiredDates.map(d=>deliveryHistoryData.find(x=>date(x.Trade_Date)===d&&x.Symbol===symbol));
+  if(values.some(x=>!x))return null;
+  const percentages=values.map(x=>num(x.Delivery_Pct));
+  if(percentages.some(x=>x===null))return null;
+  return percentages.reduce((a,b)=>a+b,0)/count;
+ };
+ return {
+  qty:current?num(current.Deliverable_Quantity):null,
+  pct:current?num(current.Delivery_Pct):null,
+  avg5:averageFor(5),
+  avg10:averageFor(10)
+ };
 }
 function renderTable(){
  const currentTradingDate=latestDate(classificationData);
