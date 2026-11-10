@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurora — Institutional Reports</title>
+<style>
+:root{--navy:#172d4b;--bg:#f3f6fa;--border:#dbe3ed;--text:#172033;--muted:#617087;--green:#008c45;--red:#d62828;--amber:#946200}
+*{box-sizing:border-box}body{margin:0;padding:18px;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+header{background:var(--navy);color:#fff;padding:26px;border-radius:14px;margin-bottom:18px}
+header h1{margin:0 0 8px;font-size:30px}header p{margin:0;font-size:16px;opacity:.92}
+.back{display:inline-block;margin:0 0 16px;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--navy);text-decoration:none;font-weight:bold}
+.toolbar,.tabs,.period{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:14px 0}
+button{border:1px solid #cbd5e1;border-radius:8px;padding:10px 14px;background:#fff;color:var(--navy);font-size:14px;font-weight:bold;cursor:pointer}
+button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.status{background:#fff;border:1px solid var(--border);padding:12px 14px;border-radius:9px;color:var(--muted);margin:12px 0}
+.status.warn{border-left:4px solid #d69a22}.status.good{border-left:4px solid var(--green)}
+.panel{display:none}.panel.active{display:block}
+h2{font-size:22px;margin:24px 0 10px}.sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:12px 0}
+.card{background:#fff;border:1px solid var(--border);border-radius:11px;padding:15px;box-shadow:0 2px 5px rgba(0,0,0,.03)}
+.card label{display:block;color:var(--muted);font-size:13px;margin-bottom:9px}.card strong{font-size:23px}
+.table-wrap{overflow-x:auto;background:#fff;border:1px solid var(--border);border-radius:10px}
+table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:13px}th,td{padding:11px 12px;border-bottom:1px solid var(--border);text-align:right}
+th{background:#e8edf5;color:#26364d;position:sticky;top:0}th:first-child,td:first-child{text-align:left}
+tr:last-child td{border-bottom:0}.positive{color:var(--green);font-weight:bold}.negative{color:var(--red);font-weight:bold}.muted{color:var(--muted)}
+.note{font-size:13px;color:var(--muted);line-height:1.55;margin:12px 0}
+.source{font-size:12px;color:#738096;margin-top:8px}
+.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#eef2f7;color:#46566c;font-size:12px}
+select{padding:9px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:var(--text)}
+@media(max-width:650px){body{padding:10px}header{padding:20px}header h1{font-size:24px}}
+</style>
+</head>
+<body>
+<a class="back" href="index.html">← Back to Dashboard</a>
+<header><h1>Aurora — Institutional Reports</h1><p>Cash-market participation • Derivatives positioning • Participant activity</p></header>
+<div id="loadStatus" class="status">Loading institutional datasets…</div>
+<div class="tabs" role="tablist">
+<button class="tab active" data-tab="cash">Cash Market</button>
+<button class="tab" data-tab="oi">Derivatives OI</button>
+<button class="tab" data-tab="volume">Derivatives Volume</button>
+<button class="tab" data-tab="fii">FII Derivatives Statistics</button>
+</div>
+
+<section id="cash" class="panel active">
+<h2>Cash Market — FII / DII</h2>
+<p class="sub">Buy, sell and net investment values in ₹ crore. Weekly values are sums of the reported daily cash flows.</p>
+<div class="period"><button class="period-btn active" data-period="daily" data-for="cash">Daily</button><button class="period-btn" data-period="weekly" data-for="cash">Weekly</button><span id="cashDate" class="badge">—</span></div>
+<div id="cashTable" class="table-wrap"></div>
+<div class="source">Source: institutional_data/cash_market.csv • NSE cash-market participant data</div>
+</section>
+
+<section id="oi" class="panel">
+<h2>Derivatives — Participant-wise Open Interest</h2>
+<p class="sub">Latest reported outstanding long and short contracts, shown separately for index and stock futures.</p>
+<div class="period"><button class="period-btn active" data-period="daily" data-for="oi">Latest Position</button><button class="period-btn" data-period="weekly" data-for="oi" disabled title="Historical participant OI snapshots are not yet available">Weekly Change — pending history</button><span id="oiDate" class="badge">—</span></div>
+<div id="oiTable" class="table-wrap"></div>
+<div class="status warn" id="oiHistoryNote">Historical participant-wise OI snapshots are not yet present in the repository. Therefore daily/weekly change in contracts and percentage cannot yet be calculated reliably. Current long, short and net positions are displayed without estimating changes.</div>
+<p class="note"><strong>Net OI position</strong> = Long OI − Short OI. A positive net position indicates more long than short contracts in that segment; it is not, by itself, a standalone trading signal. Client and Pro are displayed for context only and do not influence Aurora stock selection or classification.</p>
+<div class="source">Source: institutional_data/derivatives_oi.csv • NSE participant-wise OI report</div>
+</section>
+
+<section id="volume" class="panel">
+<h2>Derivatives — Participant Trading Volume</h2>
+<p class="sub">Buy/sell contract activity. This is turnover/volume information, not outstanding open interest.</p>
+<div class="period"><button class="period-btn active" data-period="daily" data-for="volume">Daily</button><button class="period-btn" data-period="weekly" data-for="volume">Weekly</button><span id="volumeDate" class="badge">—</span></div>
+<div id="volumeTable" class="table-wrap"></div>
+<div class="source">Source: institutional_data/derivatives_volume.csv • NSE participant-wise trading volume</div>
+</section>
+
+<section id="fii" class="panel">
+<h2>FII Derivatives Statistics</h2>
+<p class="sub">FII buy/sell contracts and turnover values by segment. These figures are not participant-wise open-interest changes.</p>
+<div class="period"><span id="fiiDate" class="badge">—</span></div>
+<div id="fiiTable" class="table-wrap"></div>
+<div class="source">Source: institutional_data/fii_derivatives_stats.csv • NSE FII derivatives statistics</div>
+</section>
+
+<section>
+<h2>Global Market Indicators</h2>
+<p class="sub">US 10-Year Treasury Yield • US Dollar Index • USD/INR</p>
+<div class="card-grid">
+<div class="card"><label>US 10-Year Treasury Yield</label><strong id="yieldValue">Not connected</strong><div class="source">Daily yield and direction</div></div>
+<div class="card"><label>US Dollar Index (DXY)</label><strong id="dxyValue">Not connected</strong><div class="source">Broad dollar strength / weakness</div></div>
+<div class="card"><label>USD / INR</label><strong id="inrValue">Not connected</strong><div class="source">Rupee strength / weakness against USD</div></div>
+</div>
+<div class="status warn">Global market data is not yet connected to a reliable daily data source. These fields are intentionally marked unavailable rather than showing stale or fabricated market values. We will connect and validate this feed as the next development step.</div>
+</section>
+
+<script>
+const BASE="institutional_data/";
+let cash=[],oi=[],volume=[],fii=[];
+function parseCSV(text){
+ const lines=text.replace(/^\uFEFF/,"").trim().split(/\r?\n/);if(lines.length<2)return[];
+ const split=line=>{const a=[];let v="",q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&line[i+1]==='"'&&q){v+='"';i++}else if(c==='"'){q=!q}else if(c===','&&!q){a.push(v);v=""}else v+=c}a.push(v);return a};
+ const h=split(lines[0]);return lines.slice(1).filter(Boolean).map(line=>{const a=split(line),o={};h.forEach((k,i)=>o[k]=a[i]??"");return o});
+}
+async function load(path){const r=await fetch(BASE+path+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error(path+" returned HTTP "+r.status);return parseCSV(await r.text())}
+const n=v=>{const x=Number(v);return Number.isFinite(x)?x:0};
+const fmt=(v,d=0)=>n(v).toLocaleString("en-IN",{maximumFractionDigits:d,minimumFractionDigits:d});
+const signed=(v,d=0)=>{const x=n(v);return (x>0?"+":"")+fmt(x,d)};
+const cls=v=>n(v)>0?"positive":n(v)<0?"negative":"";
+const dateSort=(a,b)=>a.localeCompare(b);
+function latestDate(rows){return rows.map(x=>x.Trade_Date).filter(Boolean).sort(dateSort).at(-1)||""}
+function weekStart(date){const d=new Date(date+"T12:00:00Z");const day=(d.getUTCDay()+6)%7;d.setUTCDate(d.getUTCDate()-day);return d.toISOString().slice(0,10)}
+function currentWeekRows(rows){if(!rows.length)return[];const d=latestDate(rows),w=weekStart(d);return rows.filter(r=>weekStart(r.Trade_Date)===w)}
+function cashRender(period){
+ let rows=period==="weekly"?currentWeekRows(cash):cash.filter(r=>r.Trade_Date===latestDate(cash));
+ const date=latestDate(rows);document.getElementById("cashDate").textContent=(period==="weekly"?"Week ending ":"Trading date ")+(date||"—");
+ const data=["FII/FPI","DII"].map(p=>{const a=rows.filter(r=>r.Category===p);return{p,b:a.reduce((s,r)=>s+n(r.Buy_Value_Cr),0),s:a.reduce((s,r)=>s+n(r.Sell_Value_Cr),0),net:a.reduce((s,r)=>s+n(r.Net_Value_Cr),0)}});
+ document.getElementById("cashTable").innerHTML=table(["Participant","Buy (₹ Cr)","Sell (₹ Cr)","Net (₹ Cr)"],data.map(r=>[r.p,fmt(r.b,2),fmt(r.s,2),'<span class="'+cls(r.net)+'">'+signed(r.net,2)+'</span>']));
+}
+function oiRender(){
+ const d=latestDate(oi);document.getElementById("oiDate").textContent="Position date "+(d||"—");
+ const parts=["FII","DII","Client","Pro"],segments=["Index Futures","Stock Futures"];
+ const rows=[];parts.forEach(p=>segments.forEach(seg=>{const r=oi.find(x=>x.Trade_Date===d&&x.Participant===p&&x.Segment===seg);if(r)rows.push([p,seg,fmt(r.Long_OI_Contracts),fmt(r.Short_OI_Contracts),'<span class="'+cls(n(r.Net_OI_Contracts))+'">'+signed(r.Net_OI_Contracts)+'</span>'])}));
+ document.getElementById("oiTable").innerHTML=table(["Participant","Segment","Long OI (contracts)","Short OI (contracts)","Net OI (contracts)"],rows);
+}
+function volumeRender(period){
+ let rows=period==="weekly"?currentWeekRows(volume):volume.filter(r=>r.Trade_Date===latestDate(volume));
+ const d=latestDate(rows);document.getElementById("volumeDate").textContent=(period==="weekly"?"Week ending ":"Trading date ")+(d||"—");
+ const out=[];["FII","DII","Client","Pro"].forEach(p=>["Index Futures","Stock Futures"].forEach(seg=>{const a=rows.filter(r=>r.Participant===p&&r.Segment===seg);if(a.length)out.push([p,seg,fmt(a.reduce((s,r)=>s+n(r.Buy_Contracts),0)),fmt(a.reduce((s,r)=>s+n(r.Sell_Contracts),0)),fmt(a.reduce((s,r)=>s+n(r.Total_Volume_Contracts),0)),signed(a.reduce((s,r)=>s+n(r.Net_Buy_Sell_Contracts),0))])}));
+ document.getElementById("volumeTable").innerHTML=table(["Participant","Segment","Buy contracts","Sell contracts","Total volume","Net buy / sell"],out);
+}
+function fiiRender(){
+ const d=latestDate(fii);document.getElementById("fiiDate").textContent="Trading date "+(d||"—");
+ const rows=fii.filter(r=>r.Trade_Date===d).map(r=>[r.Segment,fmt(r.Buy_Contracts),fmt(r.Buy_Value_Cr,2),fmt(r.Sell_Contracts),fmt(r.Sell_Value_Cr,2),'<span class="'+cls(r.Net_Buy_Sell_Value_Cr)+'">'+signed(r.Net_Buy_Sell_Value_Cr,2)+'</span>',fmt(r.EOD_OI_Contracts)]);
+ document.getElementById("fiiTable").innerHTML=table(["Segment","Buy contracts","Buy value (₹ Cr)","Sell contracts","Sell value (₹ Cr)","Net turnover (₹ Cr)","EOD OI contracts"],rows);
+}
+function table(headers,rows){if(!rows.length)return'<div style="padding:18px">No records available for this period.</div>';return'<table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join("")+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(v=>'<td>'+v+'</td>').join("")+'</tr>').join("")+'</tbody></table>'}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("active",x.id===b.dataset.tab))}));
+document.querySelectorAll(".period-btn").forEach(b=>b.addEventListener("click",()=>{if(b.disabled)return;document.querySelectorAll('.period-btn[data-for="'+b.dataset.for+'"]').forEach(x=>x.classList.toggle("active",x===b));if(b.dataset.for==="cash")cashRender(b.dataset.period);if(b.dataset.for==="volume")volumeRender(b.dataset.period)}));
+(async()=>{try{[cash,oi,volume,fii]=await Promise.all([load("cash_market.csv"),load("derivatives_oi.csv"),load("derivatives_volume.csv"),load("fii_derivatives_stats.csv")]);cashRender("daily");oiRender();volumeRender("daily");fiiRender();const dates=[latestDate(cash),latestDate(oi),latestDate(volume),latestDate(fii)].filter(Boolean).sort(dateSort);document.getElementById("loadStatus").textContent="Institutional datasets loaded • Latest available report date: "+(dates.at(-1)||"not available");document.getElementById("loadStatus").className="status good"}catch(e){document.getElementById("loadStatus").textContent="Unable to load one or more institutional CSV files: "+e.message;document.getElementById("loadStatus").className="status warn";console.error(e)}})();
+</script>
+</body>
+</html>
