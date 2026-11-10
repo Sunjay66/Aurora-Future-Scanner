@@ -60,6 +60,10 @@ def get_refresh_time(current):
     )
 
 
+PRICE_NEUTRAL_THRESHOLD_PCT = 0.25
+OI_NEUTRAL_THRESHOLD_PCT = 0.50
+
+
 def classify_pair(previous, current):
     """Classify current day's contracts against the previous snapshot."""
     previous_date = previous["Trade_Date"].max()
@@ -118,16 +122,18 @@ def classify_pair(previous, current):
         price_change = row["Price_Change_Pct"]
         oi_change = row["OI_Change_Pct"]
 
-        if price_change > 0 and oi_change > 0:
-            return "Long Buildup"
-        elif price_change < 0 and oi_change > 0:
-            return "Short Buildup"
-        elif price_change > 0 and oi_change < 0:
-            return "Short Covering"
-        elif price_change < 0 and oi_change < 0:
-            return "Long Unwinding"
-        else:
+        # Small movements are treated as neutral rather than directional signals.
+        if abs(price_change) <= PRICE_NEUTRAL_THRESHOLD_PCT or abs(oi_change) <= OI_NEUTRAL_THRESHOLD_PCT:
             return "Neutral"
+        if price_change > PRICE_NEUTRAL_THRESHOLD_PCT and oi_change > OI_NEUTRAL_THRESHOLD_PCT:
+            return "Long Buildup"
+        elif price_change < -PRICE_NEUTRAL_THRESHOLD_PCT and oi_change > OI_NEUTRAL_THRESHOLD_PCT:
+            return "Short Buildup"
+        elif price_change > PRICE_NEUTRAL_THRESHOLD_PCT and oi_change < -OI_NEUTRAL_THRESHOLD_PCT:
+            return "Short Covering"
+        elif price_change < -PRICE_NEUTRAL_THRESHOLD_PCT and oi_change < -OI_NEUTRAL_THRESHOLD_PCT:
+            return "Long Unwinding"
+        return "Neutral"
 
     merged["Classification"] = merged.apply(classification, axis=1)
 
