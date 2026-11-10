@@ -18,7 +18,9 @@ section{margin-bottom:24px}h2{font-size:23px;margin:24px 0 14px}
 input,select,button{padding:12px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px}
 input{flex:1;min-width:220px}button{cursor:pointer;background:var(--navy);color:white}button.secondary{background:#fff;color:var(--navy)}
 .message{padding:12px;border-radius:8px;background:#fff;margin:12px 0}.error{color:var(--red)}.success{color:var(--green)}
-.table-wrap{overflow-x:auto;background:#fff;border-radius:10px;border:1px solid var(--border)}
+.table-wrap{overflow:visible;background:#fff;border-radius:10px;border:1px solid var(--border)}
+/* Keep column headings visible while the user scrolls through long stock lists. */
+thead th{position:sticky;top:0;z-index:5;background:#e8edf5;box-shadow:0 1px 0 var(--border)}
 table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
 th,td{padding:10px;text-align:left;border-bottom:1px solid var(--border)}
 th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:#f4f8fc}
