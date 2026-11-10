@@ -153,7 +153,7 @@ async function loadData(){
    setText(ids[i],classificationData.filter(r=>r.Classification===cat).length);
   });
   status.textContent=`Data loaded successfully • ${futuresData.length} futures • classification date ${classDate}`;
-  status.className="message success";buildClassificationChanges();renderTable();
+  status.className="message success";buildClassificationChanges();\n  const requested=new URLSearchParams(window.location.search).get("classification");\n  const allowed=["Long Buildup","Short Buildup","Short Covering","Long Unwinding"];\n  if(requested&&allowed.includes(requested))selectCategory(requested);else renderTable();
  }catch(e){status.textContent="OI data loading error: "+e.message;status.className="message error";console.error(e)}
 }
 function buildClassificationChanges(){
