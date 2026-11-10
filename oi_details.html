@@ -59,7 +59,7 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 <span class="refresh-help">Detailed stock lookup and classification view. Use the dashboard to initiate a data refresh.</span>
 </div>
 
-<section>
+<section id="summary-metadata">
 <div class="cards">
 <div class="card"><div class="card-title">Total Stock Futures</div><div class="card-value" id="totalCount">—</div></div>
 <div class="card"><div class="card-title">Bhavcopy / Trading Date</div><div class="card-value" id="bhavDate">—</div></div>
@@ -69,7 +69,7 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 <div id="status" class="message">Loading dashboard data...</div>
 </section>
 
-<section>
+<section id="stock-lookup">
 <h2>Stock Search / Quick Lookup</h2>
 <div class="controls">
 <input id="stockSearch" placeholder="Enter stock symbol (e.g. ABB, RELIANCE, HDFCBANK)" autocomplete="off">
@@ -77,7 +77,7 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 </div><div id="lookupResult"></div>
 </section>
 
-<section>
+<section id="classification-cards">
 <h2>Open Interest Classification — Latest Trading Date</h2>
 <div class="cards">
 <div class="card classification-card" data-category="Long Buildup" onclick="selectCategory('Long Buildup')"><div class="card-title">Long Buildup</div><div class="card-value" id="longBuildup">0</div></div>
@@ -95,7 +95,7 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 <div class="table-wrap"><table><thead><tr><th>Symbol</th><th>Previous Classification</th><th>Current Classification</th><th>Price Change (%)</th><th>OI Change (%)</th></tr></thead><tbody id="classificationChangesBody"></tbody></table></div>
 </section>
 
-<section>
+<section id="stock-data-section">
 <h2 id="tableHeading">All Classified Futures</h2>
 <div class="controls">
 <input id="tableSearch" placeholder="Search within table by symbol..." oninput="renderTable()">
@@ -103,7 +103,7 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 <button onclick="downloadCSV()">Download CSV</button><button class="secondary" onclick="selectCategory('All')">Show All</button>
 </div>
 <div class="small-note" id="tableInfo"></div>
-<div class="table-wrap"><table><thead><tr><th>Symbol</th><th>Expiry</th><th>Close Price (₹)</th><th>Price Change (%)</th><th>OI (Contracts)</th><th>OI Change (%)</th><th>Volume (Contracts)</th><th>Delivery Qty</th><th>Delivery %</th><th>Prev. 5-session Avg %</th><th>Prev. 10-session Avg %</th><th>Classification</th></tr></thead><tbody id="futuresBody"></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Trading Date</th><th>Symbol</th><th>Expiry</th><th>Close Price (₹)</th><th>Price Change (%)</th><th>OI (Contracts)</th><th>OI Change (%)</th><th>Volume (Contracts)</th><th>Delivery Qty</th><th>Delivery %</th><th>Prev. 5-session Avg %</th><th>Prev. 10-session Avg %</th><th>Classification</th></tr></thead><tbody id="futuresBody"></tbody></table></div>
 </section>
 
 <script>
@@ -147,12 +147,31 @@ function configurePageView(){
  const changes=params.get("view")==="changes";
  const changeSection=document.getElementById("classification-changes");
  const stockSection=[...document.querySelectorAll("section")].find(s=>s.querySelector("#tableHeading"));
+ const metadata=document.getElementById("summary-metadata");
+ const lookup=document.getElementById("stock-lookup");
+ const cards=document.getElementById("classification-cards");
+ if(metadata)metadata.style.display="none";
+ if(lookup)lookup.style.display="none";
+ if(cards)cards.style.display="none";
  if(changeSection)changeSection.style.display=changes?"":"none";
  if(stockSection)stockSection.style.display=changes?"none":"";
- const lookup=document.querySelector("section:has(#stockSearch)");
- if(lookup)lookup.style.display=changes?"none":"";
- if(changes){setText("tableHeading","");document.title="Aurora — Daily Classification Changes";}
- else if(category){document.title="Aurora — "+category;}
+ const back=document.querySelector(".back-link");
+ if(back)back.textContent="← Back to Main Dashboard";
+ const title=document.querySelector("header h1");
+ const subtitle=document.querySelector("header p");
+ if(changes){
+   document.title="Aurora — Daily Classification Changes";
+   if(title)title.textContent="Daily Classification Changes";
+   if(subtitle)subtitle.textContent="Stocks whose OI classification changed on the latest trading day";
+ } else {
+   const valid=["Long Buildup","Short Buildup","Short Covering","Long Unwinding"];
+   const chosen=valid.includes(category)?category:"All Classified Futures";
+   document.title="Aurora — "+chosen;
+   if(title)title.textContent=chosen+" — Stock-wise Details";
+   if(subtitle)subtitle.textContent="Trading date: "+latestDate(classificationData);
+   selectedCategory=chosen==="All Classified Futures"?"All":chosen;
+   setText("tableHeading",chosen+" — Stock-wise Details");
+ }
 }
 async function loadData(){
  const status=document.getElementById("status");status.textContent="Loading dashboard data...";
@@ -197,7 +216,7 @@ function renderTable(){
  rows.sort((a,b)=>{if(sort==="Symbol")return a.Symbol.localeCompare(b.Symbol);if(sort==="OI_Change_Pct"&&(selectedCategory==="Short Covering"||selectedCategory==="Long Unwinding"))return Math.abs(num(b[sort])||0)-Math.abs(num(a[sort])||0);return (num(b[sort])??-Infinity)-(num(a[sort])??-Infinity)});
  setText("tableInfo",`Showing ${rows.length} stocks • Date ${latestDate(classificationData)} • ${selectedCategory}`);
  const body=document.getElementById("futuresBody");body.innerHTML="";
- rows.forEach(r=>{const d=deliveryMetrics(r.Symbol,latestDate(classificationData));body.insertAdjacentHTML("beforeend",`<tr><td><b>${esc(r.Symbol)}</b></td><td>${esc(r.Expiry_Date)}</td><td>${fmt(r.Close_Price)}</td><td class="${cls(r.Price_Change_Pct)}">${pct(r.Price_Change_Pct)}</td><td>${fmt(r.Open_Interest)}</td><td class="${cls(r.OI_Change_Pct)}">${pct(r.OI_Change_Pct)}</td><td>${fmt(r.Volume)}</td><td>${fmt(d.qty)}</td><td>${pct(d.pct)}</td><td>${pct(d.avg5)}</td><td>${pct(d.avg10)}</td><td>${esc(r.Classification)}</td></tr>`)});
+ rows.forEach(r=>{const d=deliveryMetrics(r.Symbol,latestDate(classificationData));body.insertAdjacentHTML("beforeend",`<tr><td>${esc(latestDate(classificationData))}</td><td><b>${esc(r.Symbol)}</b></td><td>${esc(r.Expiry_Date)}</td><td>${fmt(r.Close_Price)}</td><td class="${cls(r.Price_Change_Pct)}">${pct(r.Price_Change_Pct)}</td><td>${fmt(r.Open_Interest)}</td><td class="${cls(r.OI_Change_Pct)}">${pct(r.OI_Change_Pct)}</td><td>${fmt(r.Volume)}</td><td>${fmt(d.qty)}</td><td>${pct(d.pct)}</td><td>${pct(d.avg5)}</td><td>${pct(d.avg10)}</td><td>${esc(r.Classification)}</td></tr>`)});
 }
 function findStock(){
  const symbol=document.getElementById("stockSearch").value.trim().toUpperCase(),result=document.getElementById("lookupResult");
