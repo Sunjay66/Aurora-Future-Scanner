@@ -31,6 +31,11 @@ jobs:
         run: |
           python scripts/update_institutional_derivatives.py
 
+      - name: Download combined NSE, BSE and MSEI cash-market report
+        continue-on-error: true
+        run: |
+          python scripts/update_cash_market.py
+
       - name: Run Aurora OI Tracker
         run: |
           python scripts/update_oi_tracker.py
