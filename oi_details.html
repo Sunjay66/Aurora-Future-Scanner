@@ -141,6 +141,19 @@ function filled(rows){return rows.filter(r=>Object.values(r).some(v=>String(v??"
 function setText(id,v){document.getElementById(id).textContent=v}
 function selectCategory(category){selectedCategory=category;document.querySelectorAll(".classification-card").forEach(c=>c.classList.toggle("active",c.dataset.category===category));setText("tableHeading",category==="All"?"All Classified Futures":category+" — Latest Trading Date");renderTable()}
 async function getCSV(url){const res=await fetch(url+"?t="+Date.now());if(!res.ok)throw new Error(url+" HTTP "+res.status);return parseCSV(await res.text())}
+function configurePageView(){
+ const params=new URLSearchParams(window.location.search);
+ const category=params.get("classification");
+ const changes=params.get("view")==="changes";
+ const changeSection=document.getElementById("classification-changes");
+ const stockSection=[...document.querySelectorAll("section")].find(s=>s.querySelector("#tableHeading"));
+ if(changeSection)changeSection.style.display=changes?"":"none";
+ if(stockSection)stockSection.style.display=changes?"none":"";
+ const lookup=document.querySelector("section:has(#stockSearch)");
+ if(lookup)lookup.style.display=changes?"none":"";
+ if(changes){setText("tableHeading","");document.title="Aurora — Daily Classification Changes";}
+ else if(category){document.title="Aurora — "+category;}
+}
 async function loadData(){
  const status=document.getElementById("status");status.textContent="Loading dashboard data...";
  try{
@@ -155,7 +168,7 @@ async function loadData(){
    setText(ids[i],classificationData.filter(r=>r.Classification===cat).length);
   });
   status.textContent=`Data loaded successfully • ${futuresData.length} futures • classification date ${classDate} • delivery data ${deliveryHistoryData.length?latestDate(deliveryHistoryData):"awaiting refresh"}`;
-  status.className="message success";buildClassificationChanges();
+  status.className="message success";configurePageView();buildClassificationChanges();
   const requested=new URLSearchParams(window.location.search).get("classification");
   const allowed=["Long Buildup","Short Buildup","Short Covering","Long Unwinding"];
   if(requested&&allowed.includes(requested))selectCategory(requested);else renderTable();
