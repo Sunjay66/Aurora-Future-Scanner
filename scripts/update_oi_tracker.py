@@ -17,6 +17,9 @@ import io
 # CONFIGURATION
 # ------------------------------------------------------------
 
+PRICE_NEUTRAL_THRESHOLD_PCT = 0.25
+OI_NEUTRAL_THRESHOLD_PCT = 0.50
+
 IST = ZoneInfo("Asia/Kolkata")
 NOW_IST = datetime.now(IST)
 TODAY_IST = NOW_IST.date()
@@ -268,13 +271,16 @@ def classify_oi(current, previous, current_date):
         * 100
     )
 
-    price_up = merged["Price_Change_%"] > 0
-    price_down = merged["Price_Change_%"] < 0
-    oi_up = merged["OI_Change_%"] > 0
-    oi_down = merged["OI_Change_%"] < 0
+    price = merged["Price_Change_%"]
+    oi = merged["OI_Change_%"]
 
-    merged["Classification"] = "Neutral / Mixed"
+    # Small price or OI movements are treated as neutral market noise.
+    price_up = price > PRICE_NEUTRAL_THRESHOLD_PCT
+    price_down = price < -PRICE_NEUTRAL_THRESHOLD_PCT
+    oi_up = oi > OI_NEUTRAL_THRESHOLD_PCT
+    oi_down = oi < -OI_NEUTRAL_THRESHOLD_PCT
 
+    merged["Classification"] = "Neutral"
     merged.loc[price_up & oi_up, "Classification"] = "Long Buildup"
     merged.loc[price_down & oi_up, "Classification"] = "Short Buildup"
     merged.loc[price_up & oi_down, "Classification"] = "Short Covering"
