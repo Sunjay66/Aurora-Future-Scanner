@@ -37,6 +37,11 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 .pager button{padding:9px 14px}.pager .date-label{font-weight:bold}
 .section-banner{background:#eaf1fb;border:1px solid #d1dfef;padding:12px;border-radius:8px;margin:10px 0}
 @media(max-width:600px){body{padding:9px}header{padding:20px}header h1{font-size:25px}}
+.refresh-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 20px}
+.refresh-link{display:inline-block;padding:12px 18px;border-radius:8px;background:#008c45;color:#fff;text-decoration:none;font-weight:bold;border:1px solid #00783b}
+.refresh-link:hover{background:#00783b}
+.refresh-help{font-size:13px;color:#526078;line-height:1.45}
+
 </style>
 </head>
 <body>
@@ -44,6 +49,11 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 <h1>Aurora Futures OI Dashboard</h1>
 <p>Front-month stock futures • Daily price and Open Interest classification • Institutional activity</p>
 </header>
+
+<div class="refresh-bar">
+<a class="refresh-link" href="https://github.com/Sunjay66/Aurora-Future-Scanner/actions/workflows/update_oi_tracker.yml" target="_blank" rel="noopener noreferrer">↻ Run Manual Refresh</a>
+<span class="refresh-help">Opens the GitHub Actions workflow in a new tab. Sign in, select <strong>Run workflow</strong>, and wait for the run to succeed. Then return here and reload this dashboard to see the latest data.</span>
+</div>
 
 <section>
 <div class="cards">
