@@ -143,7 +143,8 @@ function renderCash(rows){
 function renderOiPlaceholder(rows){const d=latest(rows);if(d){document.getElementById("derivativesDataDate").textContent=" • Source through "+d;document.getElementById("oiPending").textContent="Latest participant OI position available through "+d+". This is earlier than the latest OI stock-classification date where applicable. Historical participant snapshots are not yet stored, so daily, weekly and monthly changes are intentionally withheld."}}
 async function main(){
  try{
- const [snapshot,history,cash,oi]=await Promise.all([csv(DATA+"front_month_snapshot.csv"),csv(DATA+"oi_classification_history.csv"),csv(INST+"cash_market.csv"),csv(INST+"derivatives_oi.csv")]);
+ const HISTORY_URL="https://raw.githubusercontent.com/Sunjay66/Aurora-Future-Scanner/homepage-redesign/data/oi_classification_history.csv";
+ const [snapshot,history,cash,oi]=await Promise.all([csv(DATA+"front_month_snapshot.csv"),csv(HISTORY_URL),csv(INST+"cash_market.csv"),csv(INST+"derivatives_oi.csv")]);
  const sd=latest(snapshot),hd=latest(history);document.getElementById("tradingDate").textContent=sd||hd||"—";
  document.getElementById("refreshTime").textContent=snapshot[0]?.Refresh_Time_IST||"—";
  const current=history.filter(r=>r.Trade_Date===hd);
