@@ -115,13 +115,13 @@ def fetch_constituents(session: requests.Session, index_name: str, url: str) -> 
     if header_line is None:
         raise ValueError("No Symbol/Ticker header row found in NSE constituent CSV")
 
-    csv_payload = "\\n".join(lines[header_line:]).encode("utf-8")
+    csv_payload = "\n".join(lines[header_line:]).encode("utf-8")
     try:
         frame = pd.read_csv(io.BytesIO(csv_payload), encoding="utf-8", engine="python")
     except Exception as exc:
         raise ValueError(f"Unable to parse CSV from detected header row {header_line + 1}: {exc}") from exc
 
-    frame.columns = [str(c).replace("\\ufeff", "").strip() for c in frame.columns]
+    frame.columns = [str(c).replace("\ufeff", "").strip() for c in frame.columns]
     symbol_col = next((c for c in frame.columns if c.lower() in {"symbol", "ticker"}), None)
     if not symbol_col:
         raise ValueError(f"No Symbol column after header detection; received {list(frame.columns)}")
