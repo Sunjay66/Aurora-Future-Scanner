@@ -66,6 +66,23 @@ body.main-dashboard #searchSection{background:#fff;border:1px solid #d7e0ec;bord
 .global-indicator-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .notice{margin-top:10px;padding:12px;background:#fff8e8;border:1px solid #f3d89a;border-radius:8px;color:#8a5b00;font-size:12px}
 @media(max-width:700px){.global-indicator-grid{grid-template-columns:1fr}.institutional-panel{padding:12px}}
+
+/* Compact dashboard density: reduce unused horizontal spread and row height. */
+body{max-width:1600px;margin:0 auto}
+.cards{grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px}
+.card{padding:14px}
+#classificationSection .cards{grid-template-columns:repeat(5,minmax(140px,1fr));gap:10px}
+#classificationSection .navigation-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#changesSection .table-wrap,#allFuturesSection .table-wrap{max-width:1180px}
+.institutional-panel{padding:14px;margin:10px 0}
+.institutional-panel h3{font-size:17px}
+.institutional-panel td,.institutional-panel th{padding:7px 9px}
+.institutional-panel table{font-size:12px}
+.period-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}
+.period-controls label,.date-label{font-size:12px;color:#53647a;font-weight:600}
+.period-controls select,.period-controls button{padding:6px 9px;font-size:12px}
+.institutional-panel .table-wrap{max-width:100%;overflow-x:auto}
+@media(max-width:850px){#classificationSection .cards{grid-template-columns:repeat(2,minmax(0,1fr))}#classificationSection .navigation-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body class="main-dashboard">
@@ -132,40 +149,40 @@ body.main-dashboard #searchSection{background:#fff;border:1px solid #d7e0ec;bord
 
 <section id="institutional">
 <h2>Institutional Participation — FII / DII</h2>
-<div class="small-note">Cash-market and derivatives data are labelled by their own latest available source dates; they may lag the latest OI trading date.</div>
+<div class="small-note">Each section displays its own latest available NSE source date. Select Daily or Weekly to change the reporting period; all sections remain visible on this page.</div>
 <div class="institutional-panel">
-<h3>Cash Market — ₹ Crore <span class="source-label" id="cashSourceDate"></span></h3>
-<p class="small-note">Daily net flow, weekly cumulative net flow and month-to-date cumulative net flow.</p>
-<div class="table-wrap"><table><thead><tr><th>Participant</th><th>Daily Net</th><th>Weekly Net</th><th>Month-to-date Net</th></tr></thead><tbody id="cashSummaryBody"></tbody></table></div>
+<h3>Cash Market — FII/FPI & DII (₹ Crore) <span class="source-label" id="cashSourceDate"></span></h3>
+<div class="period-controls"><label for="cashPeriod">View:</label><select id="cashPeriod" onchange="cashIndex=0;renderCash()"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><button class="secondary" onclick="cashPage(-1)">← Previous</button><span id="cashDateLabel" class="date-label">—</span><button class="secondary" onclick="cashPage(1)">Next →</button></div>
+<div class="small-note" id="cashNote">Daily net flow and weekly aggregate.</div>
+<div class="table-wrap"><table><thead><tr><th>Trade Date / Week</th><th>Session</th><th>Participant</th><th>Buy (₹ Cr)</th><th>Sell (₹ Cr)</th><th>Net (₹ Cr)</th><th>Source</th></tr></thead><tbody id="cashBody"></tbody></table></div>
 </div>
 <div class="institutional-panel">
 <h3>Derivatives — Index Futures <span class="source-label" id="indexOISourceDate"></span></h3>
-<p class="small-note">Latest available participant-wise open interest position. Contracts, not percentage changes.</p>
-<div class="table-wrap"><table><thead><tr><th>Participant</th><th>Long OI (Contracts)</th><th>Short OI (Contracts)</th><th>Net OI (Contracts)</th></tr></thead><tbody id="indexOIBody"></tbody></table></div>
+<div class="period-controls"><label for="oiPeriod">View:</label><select id="oiPeriod" onchange="oiIndex=0;renderOI()"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><button class="secondary" onclick="oiPage(-1)">← Previous</button><span id="oiDateLabel" class="date-label">—</span><button class="secondary" onclick="oiPage(1)">Next →</button></div>
+<p class="small-note">Participant-wise long, short and net open interest in contracts.</p>
+<div class="table-wrap"><table><thead><tr><th>Trade Date</th><th>Participant</th><th>Long OI</th><th>Short OI</th><th>Net OI</th><th>Previous Net OI</th><th>Change in Net OI</th></tr></thead><tbody id="indexOIBody"></tbody></table></div>
 </div>
 <div class="institutional-panel">
 <h3>Derivatives — Stock Futures <span class="source-label" id="stockOISourceDate"></span></h3>
-<p class="small-note">Latest available participant-wise open interest position. Contracts, not percentage changes.</p>
-<div class="table-wrap"><table><thead><tr><th>Participant</th><th>Long OI (Contracts)</th><th>Short OI (Contracts)</th><th>Net OI (Contracts)</th></tr></thead><tbody id="stockOIBody"></tbody></table></div>
+<div class="period-controls"><label for="stockOiPeriod">View:</label><select id="stockOiPeriod" onchange="stockOiIndex=0;renderStockOI()"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><button class="secondary" onclick="stockOiPage(-1)">← Previous</button><span id="stockOiDateLabel" class="date-label">—</span><button class="secondary" onclick="stockOiPage(1)">Next →</button></div>
+<p class="small-note">Participant-wise long, short and net open interest in contracts.</p>
+<div class="table-wrap"><table><thead><tr><th>Trade Date</th><th>Participant</th><th>Long OI</th><th>Short OI</th><th>Net OI</th><th>Previous Net OI</th><th>Change in Net OI</th></tr></thead><tbody id="stockOIBody"></tbody></table></div>
 </div>
 <div class="institutional-panel">
 <h3>Derivatives Trading Volume <span class="source-label" id="volumeSourceDate"></span></h3>
-<p class="small-note">Latest available participant-wise traded contracts for Index Futures and Stock Futures.</p>
-<div class="table-wrap"><table><thead><tr><th>Participant</th><th>Segment</th><th>Buy Contracts</th><th>Sell Contracts</th><th>Total Volume</th><th>Net Buy / Sell</th></tr></thead><tbody id="volumeSummaryBody"></tbody></table></div>
+<div class="period-controls"><label for="volumePeriod">View:</label><select id="volumePeriod" onchange="volumeIndex=0;renderVolume()"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><button class="secondary" onclick="volumePage(-1)">← Previous</button><span id="volumeDateLabel" class="date-label">—</span><button class="secondary" onclick="volumePage(1)">Next →</button></div>
+<p class="small-note">Participant-wise traded contracts, separately for Index Futures and Stock Futures.</p>
+<div class="table-wrap"><table><thead><tr><th>Trade Date / Week</th><th>Participant</th><th>Segment</th><th>Buy Contracts</th><th>Sell Contracts</th><th>Total Volume</th><th>Net Buy / Sell</th><th>Source</th></tr></thead><tbody id="volumeBody"></tbody></table></div>
 </div>
 <div class="institutional-panel">
 <h3>FII Derivatives Statistics <span class="source-label" id="fiiSourceDate"></span></h3>
-<p class="small-note">Latest available FII activity across index and stock futures/options.</p>
-<div class="table-wrap"><table><thead><tr><th>Segment</th><th>Buy Contracts</th><th>Buy Value (₹ Cr)</th><th>Sell Contracts</th><th>Sell Value (₹ Cr)</th><th>Net Buy / Sell (₹ Cr)</th><th>EOD OI (Contracts)</th></tr></thead><tbody id="fiiSummaryBody"></tbody></table></div>
+<div class="period-controls"><label for="fiiPeriod">View:</label><select id="fiiPeriod" onchange="fiiIndex=0;renderFII()"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><button class="secondary" onclick="fiiPage(-1)">← Previous</button><span id="fiiDateLabel" class="date-label">—</span><button class="secondary" onclick="fiiPage(1)">Next →</button></div>
+<p class="small-note">FII buy/sell activity, net values and end-of-day open interest.</p>
+<div class="table-wrap"><table><thead><tr><th>Trade Date</th><th>Segment</th><th>Buy Contracts</th><th>Buy Value (₹ Cr)</th><th>Sell Contracts</th><th>Sell Value (₹ Cr)</th><th>Net Buy / Sell (Contracts)</th><th>Net Buy / Sell (₹ Cr)</th><th>EOD OI (Contracts)</th><th>EOD OI (₹ Cr)</th><th>Source</th></tr></thead><tbody id="fiiBody"></tbody></table></div>
 </div>
 <div class="institutional-panel">
-<h2>Global Market Indicators</h2>
-<p class="small-note">Global interest-rate and currency context relevant to foreign capital flows.</p>
-<div class="global-indicator-grid">
-<div class="card"><div class="card-title">US 10-Year Treasury Yield</div><div class="card-value">—</div><div class="small-note">Awaiting data connection</div></div>
-<div class="card"><div class="card-title">US Dollar Index (DXY)</div><div class="card-value">—</div><div class="small-note">Awaiting data connection</div></div>
-<div class="card"><div class="card-title">USD / INR</div><div class="card-value">—</div><div class="small-note">Awaiting data connection</div></div>
-</div>
+<h2>Global Market Indicators</h2><p class="small-note">Global interest-rate and currency context relevant to foreign capital flows.</p>
+<div class="global-indicator-grid"><div class="card"><div class="card-title">US 10-Year Treasury Yield</div><div class="card-value">—</div><div class="small-note">Awaiting data connection</div></div><div class="card"><div class="card-title">US Dollar Index (DXY)</div><div class="card-value">—</div><div class="small-note">Awaiting data connection</div></div><div class="card"><div class="card-title">USD / INR</div><div class="card-value">—</div><div class="small-note">Awaiting data connection</div></div></div>
 <div class="notice">Global market feeds are not connected yet. Values and direction will appear only after a reliable source and update method are implemented.</div>
 </div>
 <div id="institutionalStatus" class="message">Loading institutional participant data...</div>
@@ -332,6 +349,21 @@ function renderVolume(){
 }
 function aggregateVolume(rows){const m={};rows.forEach(r=>{const k=r.Participant+"|"+r.Segment;m[k]??={...r,Trade_Date:"Weekly total",Buy_Contracts:0,Sell_Contracts:0,Total_Volume_Contracts:0,Net_Buy_Sell_Contracts:0};["Buy_Contracts","Sell_Contracts","Total_Volume_Contracts","Net_Buy_Sell_Contracts"].forEach(f=>{const n=num(r[f]);if(n===null)m[k][f]=null;else if(m[k][f]!==null)m[k][f]+=n})});return Object.values(m)}
 function volumePage(delta){volumeIndex+=delta;renderVolume()}
+let stockOiIndex=0;
+function renderStockOI(){
+ const rows=oiRows.filter(r=>r.Segment==="Stock Futures"),dates=sortedDates(rows),body=document.getElementById("stockOIBody");
+ if(!dates.length){setText("stockOiDateLabel","No stock futures OI dates");body.innerHTML="";return}
+ stockOiIndex=Math.max(0,Math.min(stockOiIndex,dates.length-1));const d=dates[stockOiIndex],period=document.getElementById("stockOiPeriod").value;
+ let selected=rows.filter(r=>date(r.Trade_Date)===d);
+ if(period==="weekly"){const wk=weekKey(d);selected=latestOI(rows.filter(r=>weekKey(date(r.Trade_Date))===wk));setText("stockOiDateLabel",d+" (week-ending/latest available)")}else setText("stockOiDateLabel",d);
+ body.innerHTML="";
+ selected.forEach(r=>{const net=num(r.Net_OI_Contracts),prev=num(r.Previous_Net_OI_Contracts),change=num(r.Change_Net_OI_Contracts);body.insertAdjacentHTML("beforeend",`<tr><td>${esc(r.Trade_Date)}</td><td>${esc(r.Participant)}</td><td>${fmt(r.Long_OI_Contracts)}</td><td>${fmt(r.Short_OI_Contracts)}</td><td class="${cls(net)}">${fmt(net)}</td><td>${fmt(prev)}</td><td class="${cls(change)}">${fmt(change)}</td></tr>`)});
+}
+function stockOiPage(delta){stockOiIndex+=delta;renderStockOI()}
+function updateInstitutionalSourceLabels(){
+ const specs=[["cashSourceDate",cashRows],["indexOISourceDate",oiRows.filter(r=>r.Segment==="Index Futures")],["stockOISourceDate",oiRows.filter(r=>r.Segment==="Stock Futures")],["volumeSourceDate",volumeRows],["fiiSourceDate",fiiRows]];
+ specs.forEach(([id,rows])=>{const d=latestDate(rows);setText(id,d?"• Source through "+d:"• Source date unavailable")});
+}
 function renderOI(){
  const dates=sortedDates(oiRows);if(!dates.length){setText("oiDateLabel","No OI report dates");document.getElementById("oiBody").innerHTML="";return}
  oiIndex=Math.max(0,Math.min(oiIndex,dates.length-1));const d=dates[oiIndex],period=document.getElementById("oiPeriod").value;let rows=oiRows.filter(r=>date(r.Trade_Date)===d);
@@ -391,7 +423,7 @@ async function loadInstitutional(){
   ]);
   cashRows=filled(c);volumeRows=filled(v);oiRows=filled(o);fiiRows=filled(f);
   // Empty template rows are excluded, but source dates/columns are preserved.
-  renderInstitutionalOverview();
+  renderCash();renderOI();renderStockOI();renderVolume();renderFII();updateInstitutionalSourceLabels();
   status.textContent=`Institutional participant data loaded • Cash: ${cashRows.length} rows • Volume: ${volumeRows.length} rows • OI: ${oiRows.length} rows • FII stats: ${fiiRows.length} rows.`;
   status.className="message success";
  }catch(e){status.textContent="Institutional CSV loading error: "+e.message;status.className="message error";console.error(e)}
