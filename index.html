@@ -188,7 +188,8 @@ async function loadData(){
   [futuresData,classificationHistoryData]=await Promise.all([getCSV(SNAPSHOT_URL),getCSV(CLASSIFICATION_URL)]);
   if(!futuresData.length||!classificationHistoryData.length)throw new Error("Required OI CSV has no rows");
   const snapDate=latestDate(futuresData),classDate=latestDate(classificationHistoryData);
-  classificationData=classificationHistoryData.filter(r=>date(r.Trade_Date)===classDate);\n  populateStockSuggestions();
+  classificationData=classificationHistoryData.filter(r=>date(r.Trade_Date)===classDate);
+  populateStockSuggestions();
   setText("totalCount",futuresData.length);setText("bhavDate",futuresData[0].Bhavcopy_Date||futuresData[0].Trade_Date||"—");
   setText("expiryDate",futuresData[0].Expiry_Date||"—");setText("refreshTime",futuresData[0].Refresh_Time_IST||"—");
   ["Long Buildup","Short Buildup","Short Covering","Long Unwinding","Neutral / Other"].forEach((cat,i)=>{
