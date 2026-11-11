@@ -99,10 +99,47 @@ def load_delivery():
     )
 
 
+
+def load_sector_data():
+    mapping_path = DATA / "stock_sector_proxy_mapping.csv"
+    history_path = DATA / "sector_index_history.csv"
+    if not mapping_path.exists():
+        raise FileNotFoundError("Missing data/stock_sector_proxy_mapping.csv; import the approved stock-sector mapping.")
+    if not history_path.exists():
+        raise FileNotFoundError("Missing data/sector_index_history.csv; import the filtered 100-session sector index history.")
+    mapping = read_csv_safe(mapping_path)
+    required = {"Symbol", "Industry", "Mapping_Status", "Sector_Index_Proxy", "Proxy_Type", "Proxy_Available"}
+    if not required.issubset(mapping.columns):
+        raise ValueError(f"Sector mapping missing columns: {sorted(required - set(mapping.columns))}")
+    mapping["Symbol"] = mapping["Symbol"].astype(str).str.strip()
+    history = read_csv_safe(history_path)
+    if not {"Trade_Date", "Index_Name", "Closing_Index_Value"}.issubset(history.columns):
+        raise ValueError("Sector index history must contain Trade_Date, Index_Name, Closing_Index_Value.")
+    history["Trade_Date"] = pd.to_datetime(history["Trade_Date"], errors="coerce")
+    history["Index_Name"] = history["Index_Name"].astype(str).str.strip()
+    history["Closing_Index_Value"] = pd.to_numeric(history["Closing_Index_Value"], errors="coerce")
+    history = history.dropna(subset=["Trade_Date", "Closing_Index_Value"])
+    history = history.drop_duplicates(["Trade_Date", "Index_Name"], keep="last")
+    history = history.sort_values(["Index_Name", "Trade_Date"])
+    history["Sector_Daily_Change_Pct"] = history.groupby("Index_Name")["Closing_Index_Value"].pct_change() * 100
+    history["Report_Month"] = history["Trade_Date"].dt.strftime("%Y-%m")
+    history["Month_First_Index_Close"] = history.groupby(["Index_Name", "Report_Month"])["Closing_Index_Value"].transform("first")
+    history["Sector_Monthly_Change_Pct"] = (
+        (history["Closing_Index_Value"] - history["Month_First_Index_Close"])
+        / history["Month_First_Index_Close"].replace(0, pd.NA) * 100
+    )
+    history = history.rename(columns={"Trade_Date": "Sector_Index_Date"})
+    return mapping, history[[
+        "Sector_Index_Date", "Index_Name", "Closing_Index_Value",
+        "Sector_Daily_Change_Pct", "Sector_Monthly_Change_Pct"
+    ]]
+
+
 def build_report():
     futures = load_futures_history()
     cash = load_cash_history()
     delivery = load_delivery()
+    sector_mapping, sector_history = load_sector_data()
 
     if cash.empty:
         cash_fields = ["Trade_Date", "Symbol", "Open_Price", "High_Price", "Low_Price",
@@ -116,6 +153,18 @@ def build_report():
 
     report = futures.merge(cash_report, on=["Trade_Date", "Symbol"], how="left")
     report = report.merge(delivery, on=["Trade_Date", "Symbol"], how="left")
+    report = report.merge(
+        sector_mapping[["Symbol", "Industry", "Mapping_Status", "Sector_Index_Proxy", "Proxy_Type", "Proxy_Available"]],
+        on="Symbol", how="left"
+    )
+    report = report.merge(
+        sector_history,
+        left_on=["Trade_Date", "Sector_Index_Proxy"],
+        right_on=["Sector_Index_Date", "Index_Name"],
+        how="left"
+    )
+    report["Sector_Daily_Change_Pct"] = pd.to_numeric(report["Sector_Daily_Change_Pct"], errors="coerce")
+    report["Sector_Monthly_Change_Pct"] = pd.to_numeric(report["Sector_Monthly_Change_Pct"], errors="coerce")
 
     # Monthly cumulative comparisons restart on each calendar month.
     report["Report_Month"] = report["Trade_Date"].dt.strftime("%Y-%m")
@@ -137,7 +186,8 @@ def build_report():
     report["Trade_Date"] = report["Trade_Date"].dt.strftime("%Y-%m-%d")
     report["Expiry_Date"] = report["Expiry_Date"].dt.strftime("%Y-%m-%d")
     for c in ["ADR_14_Rs", "ADR_14_Pct", "Delivery_Pct",
-              "Monthly_Price_Change_Pct", "Monthly_OI_Change_Pct"]:
+              "Monthly_Price_Change_Pct", "Monthly_OI_Change_Pct",
+              "Sector_Daily_Change_Pct", "Sector_Monthly_Change_Pct"]:
         if c in report.columns:
             report[c] = pd.to_numeric(report[c], errors="coerce").round(4)
 
@@ -148,7 +198,9 @@ def build_report():
         "Volume", "Cash_Close", "Open_Price", "High_Price", "Low_Price",
         "ADR_14_Rs", "ADR_14_Pct", "Delivery_Pct",
         "Monthly_Price_Change_Pct", "Monthly_OI_Change_Pct",
-        "Monthly_Daily_Records",
+        "Monthly_Daily_Records", "Industry", "Mapping_Status",
+        "Sector_Index_Proxy", "Proxy_Type", "Sector_Index_Date",
+        "Sector_Daily_Change_Pct", "Sector_Monthly_Change_Pct",
     ]
     # Add daily classification when the classifier history is available.
     class_path = DATA / "oi_classification_history.csv"
