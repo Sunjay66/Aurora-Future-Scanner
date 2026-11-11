@@ -93,13 +93,20 @@ def existing_trading_dates():
     dates = []
     for path in CASH_DIR.glob("cash_ohlc_*.csv"):
         try:
-            dates.append(datetime.strptime(path.stem.replace("cash_ohlc_", ""), "%Y-%m-%d").date())
+            day = datetime.strptime(path.stem.replace("cash_ohlc_", ""), "%Y-%m-%d").date()
+            if day.weekday() >= 5:
+                path.unlink(missing_ok=True)
+                print(f"Removed non-trading-day cash file: {path.name}")
+                continue
+            dates.append(day)
         except ValueError:
             continue
     return sorted(set(dates), reverse=True)
 
 
 def save_one_day(check_date):
+    if check_date.weekday() >= 5:
+        return False
     target = CASH_DIR / f"cash_ohlc_{check_date:%Y-%m-%d}.csv"
     if target.exists():
         return True
