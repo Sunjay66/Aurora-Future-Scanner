@@ -12,7 +12,7 @@ import argparse
 import requests
 
 from update_institutional_derivatives import (
-    BASE_URLS,
+    REPORT_BASE_URLS,
     HEADERS,
     read_participant_csv,
     fii_rows,
@@ -51,7 +51,7 @@ def main():
         filename = filename_fn(report_day)
         print(f"\n{label}: {filename}")
         valid_on_any_host = False
-        for base in BASE_URLS:
+        report_kind = "fii" if kind == "xls" else "participant"\n        for base in REPORT_BASE_URLS[report_kind]:
             url = base + filename
             try:
                 response = session.get(url, timeout=30)
