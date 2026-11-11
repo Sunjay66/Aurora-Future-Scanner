@@ -14,8 +14,8 @@ import pandas as pd
 IST = ZoneInfo("Asia/Kolkata")
 TODAY = datetime.now(IST).date()
 DATA = Path("data")
-MAP_FILE = DATA / "stock_sector_proxy_mapping.csv"
-HISTORY_FILE = DATA / "sector_index_history.csv"
+MAP_FILE = DATA / "stock_sector_proxy_mapping_clean.csv"
+HISTORY_FILE = DATA / "sector_index_history_clean.csv"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
     "Accept": "text/csv,*/*",
@@ -27,7 +27,7 @@ COLS = ["Trade_Date", "Index_Name", "Closing_Index_Value"]
 def load_mapping():
     if not MAP_FILE.exists():
         raise FileNotFoundError(
-            "Missing data/stock_sector_proxy_mapping.csv. Add the approved 218-stock mapping file before running."
+            "Missing data/stock_sector_proxy_mapping_clean.csv. Add the approved 218-stock mapping file before running."
         )
     m = pd.read_csv(MAP_FILE)
     required = {"Symbol", "Industry", "Mapping_Status", "Sector_Index_Proxy", "Proxy_Type", "Proxy_Available"}
