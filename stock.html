@@ -75,6 +75,9 @@ function render(){
   ["Delivery (%)",n(latest.Delivery_Pct)===null?"—":f(latest.Delivery_Pct)+"%"],
   ["Monthly Price Change",p(latest.Monthly_Price_Change_Pct)],
   ["Monthly OI Change",p(latest.Monthly_OI_Change_Pct)],
+  ["Mapped Sector Index",cell(latest.Sector_Index_Proxy)],
+  ["Sector Daily Change",p(latest.Sector_Daily_Change_Pct)],
+  ["Sector Monthly Change",p(latest.Sector_Monthly_Change_Pct)],
   ["Current Classification",cell(latest.Classification)]
  ].map(([k,v])=>'<div class="card"><div class="label">'+k+'</div><div class="value">'+v+'</div></div>').join("");
  filtered.forEach(r=>{
