@@ -112,6 +112,8 @@ def load_sector_data():
     if not required.issubset(mapping.columns):
         raise ValueError(f"Sector mapping missing columns: {sorted(required - set(mapping.columns))}")
     mapping["Symbol"] = mapping["Symbol"].astype(str).str.strip()
+    mapping["Proxy_Available"] = mapping["Proxy_Available"].astype(str).str.lower().isin(["true", "1", "yes"])
+    mapping.loc[~mapping["Proxy_Available"], "Sector_Index_Proxy"] = pd.NA
     history = read_csv_safe(history_path)
     if not {"Trade_Date", "Index_Name", "Closing_Index_Value"}.issubset(history.columns):
         raise ValueError("Sector index history must contain Trade_Date, Index_Name, Closing_Index_Value.")
