@@ -2,6 +2,22 @@ name: Aurora Futures OI Tracker
 
 on:
   workflow_dispatch:
+    inputs:
+      run_historical_backfill:
+        description: "Run the separate historical stock-futures archive backfill"
+        type: boolean
+        required: true
+        default: false
+      backfill_start_date:
+        description: "Historical backfill start date (YYYY-MM-DD)"
+        type: string
+        required: true
+        default: "2026-10-28"
+      backfill_end_date:
+        description: "Historical backfill end date (YYYY-MM-DD)"
+        type: string
+        required: true
+        default: "2026-11-09"
   schedule:
     - cron: "30 13 * * 1-5"
 
@@ -15,6 +31,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: homepage-redesign
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,6 +44,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Backfill historical stock-futures archives (opt-in manual run only)
+        if: github.event_name == 'workflow_dispatch' && inputs.run_historical_backfill == true
+        run: |
+          python -B scripts/backfill_stock_futures_history.py \
+            --start-date "${{ inputs.backfill_start_date }}" \
+            --end-date "${{ inputs.backfill_end_date }}"
+
       - name: Diagnose 9 November NSE institutional reports (manual runs only)
         if: github.event_name == 'workflow_dispatch'
         run: |
@@ -34,24 +59,24 @@ jobs:
       - name: Download latest NSE institutional derivatives reports
         continue-on-error: true
         run: |
-          python scripts/update_institutional_derivatives.py
+          python -B scripts/update_institutional_derivatives.py
 
       - name: Download combined NSE, BSE and MSEI cash-market report
         continue-on-error: true
         run: |
-          python scripts/update_cash_market.py
+          python -B scripts/update_cash_market.py
 
       - name: Run Aurora OI Tracker
         run: |
-          python scripts/update_oi_tracker.py
+          python -B scripts/update_oi_tracker.py
 
       - name: Run OI Classification
         run: |
-          python scripts/classify_futures_oi.py
+          python -B scripts/classify_futures_oi.py
 
       - name: Update NSE delivery history
         run: |
-          python scripts/update_delivery_history.py
+          python -B scripts/update_delivery_history.py
 
       - name: Commit updated tracker and institutional data
         run: |
