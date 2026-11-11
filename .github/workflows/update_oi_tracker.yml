@@ -61,6 +61,16 @@ jobs:
         run: |
           python -B scripts/backfill_sector_indices.py
 
+      - name: Build F&O stock to sector-index mapping (historical backfill runs only)
+        if: github.event_name == 'workflow_dispatch' && inputs.run_historical_backfill == true
+        run: |
+          python -B scripts/build_stock_sector_mapping.py
+
+      - name: Join stock activity with sector-index performance (historical backfill runs only)
+        if: github.event_name == 'workflow_dispatch' && inputs.run_historical_backfill == true
+        run: |
+          python -B scripts/build_stock_sector_activity.py
+
       - name: Diagnose 9 November NSE institutional reports (manual runs only)
         if: github.event_name == 'workflow_dispatch'
         run: |
