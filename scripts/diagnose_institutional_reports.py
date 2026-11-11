@@ -51,7 +51,8 @@ def main():
         filename = filename_fn(report_day)
         print(f"\n{label}: {filename}")
         valid_on_any_host = False
-        report_kind = "fii" if kind == "xls" else "participant"\n        for base in REPORT_BASE_URLS[report_kind]:
+        report_kind = "fii" if kind == "xls" else "participant"
+        for base in REPORT_BASE_URLS[report_kind]:
             url = base + filename
             try:
                 response = session.get(url, timeout=30)
