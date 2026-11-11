@@ -95,13 +95,37 @@ OUTPUT_COLUMNS = [
 def fetch_constituents(session: requests.Session, index_name: str, url: str) -> set[str]:
     response = session.get(url, timeout=40)
     response.raise_for_status()
-    if len(response.content) < 50:
-        raise ValueError(f"CSV unexpectedly small ({len(response.content)} bytes)")
-    frame = pd.read_csv(io.BytesIO(response.content), encoding="utf-8-sig")
-    frame.columns = [str(c).replace("\ufeff", "").strip() for c in frame.columns]
+    content = response.content
+    if len(content) < 50:
+        raise ValueError(f"CSV unexpectedly small ({len(content)} bytes)")
+
+    # NSE constituent downloads are not uniform: some files start with
+    # metadata/title rows before the actual CSV header. Locate the header
+    # explicitly rather than allowing pandas to interpret a metadata row as
+    # the column names. Retain strict symbol validation after parsing.
+    text = content.decode("utf-8-sig", errors="replace")
+    lines = text.splitlines()
+    header_line = None
+    for number, line in enumerate(lines):
+        cells = [cell.strip().strip('"').lower() for cell in line.split(",")]
+        if "symbol" in cells or "ticker" in cells:
+            header_line = number
+            break
+
+    if header_line is None:
+        raise ValueError("No Symbol/Ticker header row found in NSE constituent CSV")
+
+    csv_payload = "\\n".join(lines[header_line:]).encode("utf-8")
+    try:
+        frame = pd.read_csv(io.BytesIO(csv_payload), encoding="utf-8", engine="python")
+    except Exception as exc:
+        raise ValueError(f"Unable to parse CSV from detected header row {header_line + 1}: {exc}") from exc
+
+    frame.columns = [str(c).replace("\\ufeff", "").strip() for c in frame.columns]
     symbol_col = next((c for c in frame.columns if c.lower() in {"symbol", "ticker"}), None)
     if not symbol_col:
-        raise ValueError(f"No Symbol column; received {list(frame.columns)}")
+        raise ValueError(f"No Symbol column after header detection; received {list(frame.columns)}")
+
     symbols = set(frame[symbol_col].dropna().astype(str).str.strip().str.upper())
     symbols = {s for s in symbols if s and s not in {"NAN", "SYMBOL"}}
     if not symbols:
