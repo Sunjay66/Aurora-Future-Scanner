@@ -49,9 +49,16 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 .stock-suggestion:hover,.stock-suggestion:focus{background:#edf4fc;outline:none}
 .stock-suggestion small{color:#66758b}
 
+.summary-link,.classification-card,.nav-card{cursor:pointer}
+.summary-link:hover,.classification-card:hover,.nav-card:hover{box-shadow:0 5px 16px rgba(20,40,70,.12);transform:translateY(-2px)}
+.navigation-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:16px}
+.nav-card{background:#fff;border:1px solid #d7e0ec;border-radius:10px;padding:18px;min-height:105px;display:flex;flex-direction:column;gap:9px}
+.nav-card b{color:#172b49}.nav-card small{color:#607089;line-height:1.4;flex:1}.nav-card span{color:#0b62bd;font-size:13px;font-weight:700}
+body.main-dashboard #changesSection,body.main-dashboard #allFuturesSection,body.main-dashboard #institutional{display:none}
+body.main-dashboard #searchSection{background:#fff;border:1px solid #d7e0ec;border-radius:10px;padding:14px}
 </style>
 </head>
-<body>
+<body class="main-dashboard">
 <header>
 <h1>Aurora Futures OI Dashboard</h1>
 <p>Front-month stock futures • Daily price and Open Interest classification • Institutional activity</p>
@@ -62,17 +69,17 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 <span class="refresh-help">Opens the GitHub Actions workflow in a new tab. Sign in, select <strong>Run workflow</strong>, and wait for the run to succeed. Then return here and reload this dashboard to see the latest data.</span>
 </div>
 
-<section>
+<section id="summarySection">
 <div class="cards">
-<div class="card"><div class="card-title">Total Stock Futures</div><div class="card-value" id="totalCount">—</div></div>
-<div class="card"><div class="card-title">Bhavcopy / Trading Date</div><div class="card-value" id="bhavDate">—</div></div>
-<div class="card"><div class="card-title">Front-Month Expiry</div><div class="card-value" id="expiryDate">—</div></div>
-<div class="card"><div class="card-title">Last Refresh (IST)</div><div class="card-value" id="refreshTime">—</div></div>
+<div class="card summary-link" onclick="openDetail('all')"><div class="card-title">Total Stock Futures</div><div class="card-value" id="totalCount">—</div></div>
+<div class="card summary-link" onclick="openDetail('all')"><div class="card-title">Bhavcopy / Trading Date</div><div class="card-value" id="bhavDate">—</div></div>
+<div class="card summary-link" onclick="openDetail('all')"><div class="card-title">Front-Month Expiry</div><div class="card-value" id="expiryDate">—</div></div>
+<div class="card summary-link" onclick="openDetail('all')"><div class="card-title">Last Refresh (IST</div><div class="card-value" id="refreshTime">—</div></div>
 </div>
 <div id="status" class="message">Loading dashboard data...</div>
 </section>
 
-<section>
+<section id="searchSection">
 <h2>Stock Search / Quick Lookup</h2>
 <div class="controls">
 <div class="stock-search-wrap"><input id="stockSearch" placeholder="Type a stock symbol or company name (e.g. I, Indian Bank, ICICI Bank)" autocomplete="off" aria-autocomplete="list" aria-expanded="false" oninput="showStockSuggestions()" onfocus="showStockSuggestions()"><div id="stockSuggestions" class="stock-suggestions" role="listbox"></div></div>
@@ -80,25 +87,33 @@ th{background:#e8edf5;position:sticky;top:0;z-index:1}tbody tr:hover{background:
 </div><div id="lookupResult"></div>
 </section>
 
-<section>
+<section id="classificationSection">
 <h2>Open Interest Classification — Latest Trading Date</h2>
 <div class="cards">
-<div class="card classification-card" data-category="Long Buildup" onclick="selectCategory('Long Buildup')"><div class="card-title">Long Buildup</div><div class="card-value" id="longBuildup">0</div></div>
-<div class="card classification-card" data-category="Short Buildup" onclick="selectCategory('Short Buildup')"><div class="card-title">Short Buildup</div><div class="card-value" id="shortBuildup">0</div></div>
-<div class="card classification-card" data-category="Short Covering" onclick="selectCategory('Short Covering')"><div class="card-title">Short Covering</div><div class="card-value" id="shortCovering">0</div></div>
-<div class="card classification-card" data-category="Long Unwinding" onclick="selectCategory('Long Unwinding')"><div class="card-title">Long Unwinding</div><div class="card-value" id="longUnwinding">0</div></div>
-<div class="card classification-card" data-category="Neutral / Other" onclick="selectCategory('Neutral / Other')"><div class="card-title">Neutral / Other</div><div class="card-value" id="neutralOther">0</div></div>
+<div class="card classification-card" data-category="Long Buildup" onclick="openDetail('classification','Long Buildup')"><div class="card-title">Long Buildup</div><div class="card-value" id="longBuildup">0</div></div>
+<div class="card classification-card" data-category="Short Buildup" onclick="openDetail('classification','Short Buildup')"><div class="card-title">Short Buildup</div><div class="card-value" id="shortBuildup">0</div></div>
+<div class="card classification-card" data-category="Short Covering" onclick="openDetail('classification','Short Covering')"><div class="card-title">Short Covering</div><div class="card-value" id="shortCovering">0</div></div>
+<div class="card classification-card" data-category="Long Unwinding" onclick="openDetail('classification','Long Unwinding')"><div class="card-title">Long Unwinding</div><div class="card-value" id="longUnwinding">0</div></div>
+<div class="card classification-card" data-category="Neutral / Other" onclick="openDetail('classification','Neutral / Other')"><div class="card-title">Neutral / Other</div><div class="card-value" id="neutralOther">0</div></div>
+</div>
+<div class="navigation-grid">
+<div class="nav-card" onclick="openDetail('changes')"><b>Daily Classification Changes</b><small>Stocks whose classification changed</small><span>Open report →</span></div>
+<div class="nav-card" onclick="openDetail('all')"><b>All Classified Futures</b><small>Price, OI, volume and classification</small><span>Open report →</span></div>
+<div class="nav-card" onclick="openDetail('cash')"><b>Cash Market — FII / DII</b><small>Daily and weekly institutional cash activity</small><span>Open report →</span></div>
+<div class="nav-card" onclick="openDetail('volume')"><b>Derivatives Volume</b><small>Participant-wise trading volume</small><span>Open report →</span></div>
+<div class="nav-card" onclick="openDetail('oi')"><b>Derivatives Open Interest</b><small>Participant-wise long, short and net OI</small><span>Open report →</span></div>
+<div class="nav-card" onclick="openDetail('fii')"><b>FII Derivatives Statistics</b><small>FII contracts, values and end-of-day OI</small><span>Open report →</span></div>
 </div>
 </section>
 
-<section>
+<section id="changesSection">
 <h2>Daily Classification Changes</h2>
 <div class="card"><div class="card-title">Stocks Changed Classification</div><div class="card-value" id="classificationChangeCount">0</div></div>
 <div id="classificationChangesMessage" class="message">Loading classification changes...</div>
 <div class="table-wrap"><table><thead><tr><th>Symbol</th><th>Previous Classification</th><th>Current Classification</th><th>Price Change (%)</th><th>OI Change (%)</th></tr></thead><tbody id="classificationChangesBody"></tbody></table></div>
 </section>
 
-<section>
+<section id="allFuturesSection">
 <h2 id="tableHeading">All Classified Futures</h2>
 <div class="controls">
 <input id="tableSearch" placeholder="Search within table by symbol..." oninput="renderTable()">
@@ -163,6 +178,7 @@ let selectedCategory="All";
 let cashRows=[],volumeRows=[],oiRows=[],fiiRows=[];
 let cashIndex=0,volumeIndex=0,oiIndex=0,fiiIndex=0;
 
+function openDetail(view,category){let u='details.html?view='+encodeURIComponent(view);if(category)u+='&category='+encodeURIComponent(category);location.href=u;}
 function parseCSV(text){
  const rows=[];let row=[],value="",quoted=false;text=text.replace(/^\uFEFF/,"");
  for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1];
