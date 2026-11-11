@@ -1,0 +1,219 @@
+Symbol,Industry,Mapping_Status,Sector_Index_Proxy,Proxy_Type,Proxy_Available
+360ONE,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+ABB,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+ABCAPITAL,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+ADANIENSOL,Power,MAPPED,Nifty Energy,ENERGY_PROXY,True
+ADANIENT,Metals & Mining,MAPPED,Nifty Metal,DIRECT_SECTOR_PROXY,True
+ADANIGREEN,Power,MAPPED,Nifty Energy,ENERGY_PROXY,True
+ADANIPORTS,Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+ADANIPOWER,Power,MAPPED,Nifty Energy,ENERGY_PROXY,True
+ALKEM,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+AMBER,Consumer Durables,MAPPED,Nifty Consumer Durables,DIRECT_SECTOR_PROXY,True
+AMBUJACEM,Construction Materials,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+ANANDRATHI,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+ANGELONE,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+APLAPOLLO,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+APOLLOHOSP,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+ASHOKLEY,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+ASIANPAINT,Consumer Durables,MAPPED,Nifty Consumer Durables,DIRECT_SECTOR_PROXY,True
+ASTRAL,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+ATHERENERG,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+AUBANK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+AUROPHARMA,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+AXISBANK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+BAJAJ-AUTO,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+BAJAJFINSV,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+BAJFINANCE,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+BANDHANBNK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+BANKBARODA,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+BANKINDIA,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+BDL,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+BEL,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+BHARATFORG,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+BHARTIARTL,Telecommunication,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+BHEL,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+BIOCON,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+BLUESTARCO,Consumer Durables,MAPPED,Nifty Consumer Durables,DIRECT_SECTOR_PROXY,True
+BOSCHLTD,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+BPCL,Oil Gas & Consumable Fuels,MAPPED,Nifty Oil & Gas,DIRECT_SECTOR_PROXY,True
+BRITANNIA,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+BSE,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+CAMS,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+CANBK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+CDSL,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+CGPOWER,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+CHOLAFIN,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+CIPLA,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+COALINDIA,Oil Gas & Consumable Fuels,MAPPED,Nifty Oil & Gas,DIRECT_SECTOR_PROXY,True
+COCHINSHIP,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+COFORGE,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+COLPAL,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+CONCOR,Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+COROMANDEL,Chemicals,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+CROMPTON,Consumer Durables,MAPPED,Nifty Consumer Durables,DIRECT_SECTOR_PROXY,True
+CUB,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+CUMMINSIND,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+DABUR,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+DATAPATTNS,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+DELHIVERY,Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+DIVISLAB,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+DIXON,Consumer Durables,MAPPED,Nifty Consumer Durables,DIRECT_SECTOR_PROXY,True
+DLF,Realty,MAPPED,Nifty Realty,DIRECT_SECTOR_PROXY,True
+DMART,Consumer Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+DRREDDY,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+EICHERMOT,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+ENRIN,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+ETERNAL,Consumer Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+FEDERALBNK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+FORCEMOT,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+FORTIS,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+GAIL,Oil Gas & Consumable Fuels,MAPPED,Nifty Oil & Gas,DIRECT_SECTOR_PROXY,True
+GLENMARK,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+GMRAIRPORT,Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+GODFRYPHLP,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+GODREJCP,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+GODREJPROP,Realty,MAPPED,Nifty Realty,DIRECT_SECTOR_PROXY,True
+GRASIM,Construction Materials,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+GVT&D,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+HAL,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+HAVELLS,Consumer Durables,MAPPED,Nifty Consumer Durables,DIRECT_SECTOR_PROXY,True
+HCLTECH,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+HDFCAMC,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+HDFCBANK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+HDFCLIFE,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+HEROMOTOCO,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+HINDALCO,Metals & Mining,MAPPED,Nifty Metal,DIRECT_SECTOR_PROXY,True
+HINDPETRO,Oil Gas & Consumable Fuels,MAPPED,Nifty Oil & Gas,DIRECT_SECTOR_PROXY,True
+HINDUNILVR,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+HINDZINC,Metals & Mining,MAPPED,Nifty Metal,DIRECT_SECTOR_PROXY,True
+HYUNDAI,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+ICICIBANK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+ICICIGI,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+ICICILIFE,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+IDEA,Telecommunication,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+IDFCFIRSTB,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+IEX,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+INDHOTEL,Consumer Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+INDIANB,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+INDIGO,Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+INDUSINDBK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+INDUSTOWER,Telecommunication,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+INFY,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+INOXWIND,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+IOC,Oil Gas & Consumable Fuels,MAPPED,Nifty Oil & Gas,DIRECT_SECTOR_PROXY,True
+IREDA,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+IRFC,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+ITC,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+JINDALSTEL,Metals & Mining,MAPPED,Nifty Metal,DIRECT_SECTOR_PROXY,True
+JIOFIN,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+JSWENERGY,Power,MAPPED,Nifty Energy,ENERGY_PROXY,True
+JSWSTEEL,Metals & Mining,MAPPED,Nifty Metal,DIRECT_SECTOR_PROXY,True
+JUBLFOOD,Consumer Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+KALYANKJIL,Consumer Durables,MAPPED,Nifty Consumer Durables,DIRECT_SECTOR_PROXY,True
+KARURVYSYA,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+KAYNES,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+KEI,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+KFINTECH,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+KOTAKBANK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+KPITTECH,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+LAURUSLABS,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+LICHSGFIN,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+LICI,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+LODHA,Realty,MAPPED,Nifty Realty,DIRECT_SECTOR_PROXY,True
+LT,Construction,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+LTF,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+LTM,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+LUPIN,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+M&M,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+MAHABANK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+MANAPPURAM,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+MANKIND,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+MARICO,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+MARUTI,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+MAXHEALTH,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+MAZDOCK,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+MCX,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+MFSL,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+MOTHERSON,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+MOTILALOFS,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+MPHASIS,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+MUTHOOTFIN,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+NAM-INDIA,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+NATIONALUM,Metals & Mining,MAPPED,Nifty Metal,DIRECT_SECTOR_PROXY,True
+NAUKRI,Consumer Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+NAVINFLUOR,Chemicals,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+NBCC,Construction,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+NESTLEIND,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+NHPC,Power,MAPPED,Nifty Energy,ENERGY_PROXY,True
+NMDC,Metals & Mining,MAPPED,Nifty Metal,DIRECT_SECTOR_PROXY,True
+NTPC,Power,MAPPED,Nifty Energy,ENERGY_PROXY,True
+NYKAA,Consumer Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+OBEROIRLTY,Realty,MAPPED,Nifty Realty,DIRECT_SECTOR_PROXY,True
+OFSS,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+OIL,Oil Gas & Consumable Fuels,MAPPED,Nifty Oil & Gas,DIRECT_SECTOR_PROXY,True
+ONGC,Oil Gas & Consumable Fuels,MAPPED,Nifty Oil & Gas,DIRECT_SECTOR_PROXY,True
+PAGEIND,Textiles,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+PATANJALI,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+PAYTM,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+PERSISTENT,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+PETRONET,Oil Gas & Consumable Fuels,MAPPED,Nifty Oil & Gas,DIRECT_SECTOR_PROXY,True
+PFC,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+PGEL,Consumer Durables,MAPPED,Nifty Consumer Durables,DIRECT_SECTOR_PROXY,True
+PHOENIXLTD,Realty,MAPPED,Nifty Realty,DIRECT_SECTOR_PROXY,True
+PIDILITIND,Chemicals,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+PIIND,Chemicals,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+PNB,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+PNBHOUSING,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+POLICYBZR,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+POLYCAB,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+POWERGRID,Power,MAPPED,Nifty Energy,ENERGY_PROXY,True
+POWERINDIA,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+PREMIERENE,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+PRESTIGE,Realty,MAPPED,Nifty Realty,DIRECT_SECTOR_PROXY,True
+RADICO,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+RBLBANK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+RECLTD,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+RELIANCE,Oil Gas & Consumable Fuels,MAPPED,Nifty Oil & Gas,DIRECT_SECTOR_PROXY,True
+RVNL,Construction,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+SAGILITY,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+SAIL,Metals & Mining,MAPPED,Nifty Metal,DIRECT_SECTOR_PROXY,True
+SBICARD,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+SBILIFE,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+SBIN,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+SHREECEM,Construction Materials,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+SHRIRAMFIN,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+SIEMENS,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+SOLARINDS,Chemicals,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+SONACOMS,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+SRF,Chemicals,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+SUNPHARMA,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+SUPREMEIND,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+SUZLON,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+SWIGGY,Consumer Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+SYRMA,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+TATACONSUM,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+TATAELXSI,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+TATAPOWER,Power,MAPPED,Nifty Energy,ENERGY_PROXY,True
+TATASTEEL,Metals & Mining,MAPPED,Nifty Metal,DIRECT_SECTOR_PROXY,True
+TCS,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+TECHM,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+TIINDIA,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+TITAN,Consumer Durables,MAPPED,Nifty Consumer Durables,DIRECT_SECTOR_PROXY,True
+TMPV,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+TORNTPHARM,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
+TRENT,Consumer Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+TVSMOTOR,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+UJJIVANSFB,,NOT_IN_NIFTY500,Nifty 50,MARKET_PROXY_ONLY,False
+ULTRACEMCO,Construction Materials,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+UNIONBANK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+UNITDSPR,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+UNOMINDA,Automobile and Auto Components,MAPPED,Nifty Auto,DIRECT_SECTOR_PROXY,True
+UPL,Chemicals,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+VBL,Fast Moving Consumer Goods,MAPPED,Nifty FMCG,DIRECT_SECTOR_PROXY,True
+VEDL,Metals & Mining,MAPPED,Nifty Metal,DIRECT_SECTOR_PROXY,True
+VMM,Consumer Services,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+VOLTAS,Consumer Durables,MAPPED,Nifty Consumer Durables,DIRECT_SECTOR_PROXY,True
+WAAREEENER,Capital Goods,MAPPED,Nifty 50,MARKET_PROXY_ONLY,True
+WIPRO,Information Technology,MAPPED,Nifty IT,DIRECT_SECTOR_PROXY,True
+YESBANK,Financial Services,MAPPED,Nifty Financial Services,BROAD_FINANCIAL_PROXY,True
+ZYDUSLIFE,Healthcare,MAPPED,Nifty Pharma,PHARMA_PROXY_NOT_FULL_HEALTHCARE,True
