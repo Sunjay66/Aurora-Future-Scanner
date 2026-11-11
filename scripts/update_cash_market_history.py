@@ -128,11 +128,11 @@ def main():
 
     # First-time warm-up: collect enough prior sessions for a 14-session ADR.
     dates = existing_trading_dates()
-    if len(dates) < 14:
-        print(f"ADR warm-up: {len(dates)}/14 cash sessions available.")
+    if len(dates) < 15:
+        print(f"ADR warm-up: {len(dates)}/15 cash sessions available.")
         known = set(dates)
         for offset in range(1, 61):
-            if len(known) >= 14:
+            if len(known) >= 15:
                 break
             check_date = TODAY - timedelta(days=offset)
             if check_date in known:
