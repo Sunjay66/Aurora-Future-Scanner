@@ -116,7 +116,7 @@ def save_one_day(check_date):
 
 def main():
     print("AURORA CASH OHLC HISTORY — ADR-14 input (not backtesting)")
-    # Always look for the latest available cash session, including after holidays.
+    # First find the latest cash session published by NSE.
     latest_found = False
     for offset in range(0, 11):
         check_date = TODAY - timedelta(days=offset)
@@ -126,22 +126,34 @@ def main():
     if not latest_found:
         print("No new cash bhavcopy found; retaining existing history.")
 
-    # First-time warm-up: collect enough prior sessions for a 14-session ADR.
-    dates = existing_trading_dates()
-    if len(dates) < 15:
-        print(f"ADR warm-up: {len(dates)}/15 cash sessions available.")
-        known = set(dates)
-        for offset in range(1, 61):
-            if len(known) >= 15:
-                break
-            check_date = TODAY - timedelta(days=offset)
-            if check_date in known:
-                continue
-            if save_one_day(check_date):
-                known.add(check_date)
-        print(f"Cash sessions retained: {len(existing_trading_dates())}")
+    # ADR-14 for the latest futures report date needs 14 daily ranges
+    # plus the preceding close used to calculate the first range percentage.
+    futures_file = DATA_DIR / "front_month_snapshot.csv"
+    if futures_file.exists():
+        futures = pd.read_csv(futures_file)
+        futures["Trade_Date"] = pd.to_datetime(futures["Trade_Date"], errors="coerce")
+        report_date = futures["Trade_Date"].max()
+        if pd.isna(report_date):
+            report_date = pd.Timestamp(TODAY)
+        report_date = report_date.date()
     else:
-        print(f"Cash OHLC history ready: {len(dates)} sessions retained.")
+        report_date = TODAY
+
+    known = {d for d in existing_trading_dates() if d <= report_date}
+    print(f"ADR-14 warm-up through latest futures date {report_date}: {len(known)}/15 cash sessions.")
+    for offset in range(1, 91):
+        if len(known) >= 15:
+            break
+        check_date = report_date - timedelta(days=offset)
+        if check_date.weekday() >= 5 or check_date in known:
+            continue
+        if save_one_day(check_date):
+            known.add(check_date)
+    print(f"Cash sessions available on/before report date: {len({d for d in existing_trading_dates() if d <= report_date})}")
+    if len(known) < 15:
+        print("WARNING: ADR-14 remains unavailable until 15 valid cash sessions exist on/before the futures report date.")
+    else:
+        print("ADR-14 cash-market warm-up is ready for the latest futures report date.")
 
 
 if __name__ == "__main__":
