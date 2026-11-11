@@ -228,6 +228,20 @@ def main() -> int:
     combined = pd.concat([existing, incoming], ignore_index=True)
     combined = combined.drop_duplicates(["Trade_Date", "Index_Name"], keep="last")
     combined = combined.sort_values(["Trade_Date", "Index_Name"]).reset_index(drop=True)
+
+    # Calculate index daily movement against the previous regular session.
+    combined["Daily_Change_Pct"] = pd.NA
+    regular_mask = ~combined["Trade_Date"].isin(MUHURAT_DATES)
+    regular = combined.loc[regular_mask].sort_values(["Index_Name", "Trade_Date"]).copy()
+    regular["Previous_Regular_Close"] = regular.groupby("Index_Name")["Close"].shift(1)
+    regular["Daily_Change_Pct"] = (
+        (regular["Close"] - regular["Previous_Regular_Close"])
+        / regular["Previous_Regular_Close"] * 100
+    ).where(regular["Previous_Regular_Close"] > 0).round(4)
+    combined.loc[regular.index, "Daily_Change_Pct"] = regular["Daily_Change_Pct"]
+    combined["Is_Muhurat"] = combined["Trade_Date"].isin(MUHURAT_DATES)
+    combined["Include_In_Calculations"] = ~combined["Is_Muhurat"]
+
     if len(combined) < len(existing):
         raise RuntimeError("Backfill would reduce existing sector index history; refusing to write.")
 
