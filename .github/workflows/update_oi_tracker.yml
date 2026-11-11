@@ -51,6 +51,11 @@ jobs:
             --start-date "${{ inputs.backfill_start_date }}" \
             --end-date "${{ inputs.backfill_end_date }}"
 
+      - name: Build stock activity history (historical backfill runs only)
+        if: github.event_name == 'workflow_dispatch' && inputs.run_historical_backfill == true
+        run: |
+          python -B scripts/build_stock_activity_history.py
+
       - name: Diagnose 9 November NSE institutional reports (manual runs only)
         if: github.event_name == 'workflow_dispatch'
         run: |
