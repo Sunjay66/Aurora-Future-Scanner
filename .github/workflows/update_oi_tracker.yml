@@ -56,6 +56,11 @@ jobs:
         run: |
           python -B scripts/build_stock_activity_history.py
 
+      - name: Backfill NSE sector-index history (historical backfill runs only)
+        if: github.event_name == 'workflow_dispatch' && inputs.run_historical_backfill == true
+        run: |
+          python -B scripts/backfill_sector_indices.py
+
       - name: Diagnose 9 November NSE institutional reports (manual runs only)
         if: github.event_name == 'workflow_dispatch'
         run: |
