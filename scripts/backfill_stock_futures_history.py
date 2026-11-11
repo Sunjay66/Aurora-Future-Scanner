@@ -128,8 +128,8 @@ def parse_udiff_zip(content: bytes, expected_date: date, filename: str) -> pd.Da
     frame = frame.sort_values(["Symbol", "Expiry_Date", "Volume"], ascending=[True, True, False])
     front = frame.drop_duplicates(subset=["Symbol"], keep="first").copy()
 
-    front["Trade_Date"] = front["Trade_Date"].map(date.isoformat)
-    front["Expiry_Date"] = front["Expiry_Date"].map(date.isoformat)
+    front["Trade_Date"] = front["Trade_Date"].map(lambda value: value.isoformat())
+    front["Expiry_Date"] = front["Expiry_Date"].map(lambda value: value.isoformat())
     front["Source_File"] = filename
     front["Refresh_Time_IST"] = datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S")
     front = front[OUTPUT_COLUMNS].sort_values("Symbol").reset_index(drop=True)
