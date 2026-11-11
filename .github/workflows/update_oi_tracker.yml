@@ -26,6 +26,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Diagnose 9 November NSE institutional reports (manual runs only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          python scripts/diagnose_institutional_reports.py --date "2026-11-09"
+
       - name: Download latest NSE institutional derivatives reports
         continue-on-error: true
         run: |
