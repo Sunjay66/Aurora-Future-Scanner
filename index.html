@@ -365,11 +365,12 @@ function updateInstitutionalSourceLabels(){
  specs.forEach(([id,rows])=>{const d=latestDate(rows);setText(id,d?"• Source through "+d:"• Source date unavailable")});
 }
 function renderOI(){
- const dates=sortedDates(oiRows);if(!dates.length){setText("oiDateLabel","No OI report dates");document.getElementById("oiBody").innerHTML="";return}
- oiIndex=Math.max(0,Math.min(oiIndex,dates.length-1));const d=dates[oiIndex],period=document.getElementById("oiPeriod").value;let rows=oiRows.filter(r=>date(r.Trade_Date)===d);
- if(period==="weekly"){const wk=weekKey(d);rows=oiRows.filter(r=>weekKey(date(r.Trade_Date))===wk);rows=latestOI(rows);setText("oiDateLabel",`${d} (week-ending/latest available)`)}else setText("oiDateLabel",d);
- const body=document.getElementById("oiBody");body.innerHTML="";
- rows.forEach(r=>{const net=num(r.Net_OI_Contracts),prev=num(r.Previous_Net_OI_Contracts),change=num(r.Change_Net_OI_Contracts);body.insertAdjacentHTML("beforeend",`<tr><td>${esc(r.Trade_Date||d)}</td><td>${esc(r.Participant)}</td><td>${esc(r.Segment)}</td><td>${fmt(r.Long_OI_Contracts)}</td><td>${fmt(r.Short_OI_Contracts)}</td><td class="${cls(net)}">${fmt(net)}</td><td>${fmt(prev)}</td><td class="${cls(change)}">${fmt(change)}</td><td>${esc(r.Source||"—")}</td></tr>`)});
+ const rowsAll=oiRows.filter(r=>r.Segment==="Index Futures"),dates=sortedDates(rowsAll),body=document.getElementById("indexOIBody");
+ if(!dates.length){setText("oiDateLabel","No index futures OI dates");body.innerHTML="";return}
+ oiIndex=Math.max(0,Math.min(oiIndex,dates.length-1));const d=dates[oiIndex],period=document.getElementById("oiPeriod").value;let rows=rowsAll.filter(r=>date(r.Trade_Date)===d);
+ if(period==="weekly"){const wk=weekKey(d);rows=latestOI(rowsAll.filter(r=>weekKey(date(r.Trade_Date))===wk));setText("oiDateLabel",`${d} (week-ending/latest available)`)}else setText("oiDateLabel",d);
+ body.innerHTML="";
+ rows.forEach(r=>{const net=num(r.Net_OI_Contracts),prev=num(r.Previous_Net_OI_Contracts),change=num(r.Change_Net_OI_Contracts);body.insertAdjacentHTML("beforeend",`<tr><td>${esc(r.Trade_Date||d)}</td><td>${esc(r.Participant)}</td><td>${fmt(r.Long_OI_Contracts)}</td><td>${fmt(r.Short_OI_Contracts)}</td><td class="${cls(net)}">${fmt(net)}</td><td>${fmt(prev)}</td><td class="${cls(change)}">${fmt(change)}</td></tr>`)});
 }
 function latestOI(rows){const by={};rows.forEach(r=>{const k=r.Participant+"|"+r.Segment;if(!by[k]||date(r.Trade_Date)>date(by[k].Trade_Date))by[k]=r});return Object.values(by)}
 function oiPage(delta){oiIndex+=delta;renderOI()}
