@@ -83,6 +83,15 @@ body{max-width:1600px;margin:0 auto}
 .period-controls select,.period-controls button{padding:6px 9px;font-size:12px}
 .institutional-panel .table-wrap{max-width:100%;overflow-x:auto}
 @media(max-width:850px){#classificationSection .cards{grid-template-columns:repeat(2,minmax(0,1fr))}#classificationSection .navigation-grid{grid-template-columns:1fr}}
+
+/* Compact institutional tables: remove unused horizontal spread */
+#institutional .institutional-panel .table-wrap{overflow-x:auto}
+#institutional .institutional-panel table{width:auto;max-width:100%;table-layout:auto}
+#institutional .institutional-panel th,#institutional .institutional-panel td{padding:8px 10px;white-space:nowrap}
+#institutional .institutional-panel th.date-col,#institutional .institutional-panel td.date-col{width:112px;min-width:112px;max-width:112px;text-align:left}
+#institutional .institutional-panel th:first-child,#institutional .institutional-panel td:first-child{padding-left:10px}
+#institutional .institutional-panel th:not(:first-child),#institutional .institutional-panel td:not(:first-child){text-align:right}
+#institutional .institutional-panel td:nth-child(2),#institutional .institutional-panel th:nth-child(2){text-align:left}
 </style>
 </head>
 <body class="main-dashboard">
@@ -154,13 +163,13 @@ body{max-width:1600px;margin:0 auto}
 <h3>Cash Market — FII/FPI & DII (₹ Crore) <span class="source-label" id="cashSourceDate"></span></h3>
 <div class="period-controls"><label for="cashPeriod">View:</label><select id="cashPeriod" onchange="cashIndex=0;renderCash()"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><button class="secondary" onclick="cashPage(-1)">← Previous</button><span id="cashDateLabel" class="date-label">—</span><button class="secondary" onclick="cashPage(1)">Next →</button></div>
 <div class="small-note" id="cashNote">Daily net flow and weekly aggregate.</div>
-<div class="table-wrap"><table><thead><tr><th>Trade Date / Week</th><th>Session</th><th>Participant</th><th>Buy (₹ Cr)</th><th>Sell (₹ Cr)</th><th>Net (₹ Cr)</th><th>Source</th></tr></thead><tbody id="cashBody"></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th class="date-col">Trade Date / Week</th><th>Participant</th><th>Buy (₹ Cr)</th><th>Sell (₹ Cr)</th><th>Net (₹ Cr)</th></tr></thead><tbody id="cashBody"></tbody></table></div>
 </div>
 <div class="institutional-panel">
 <h3>Derivatives — Index Futures <span class="source-label" id="indexOISourceDate"></span></h3>
 <div class="period-controls"><label for="oiPeriod">View:</label><select id="oiPeriod" onchange="oiIndex=0;renderOI()"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><button class="secondary" onclick="oiPage(-1)">← Previous</button><span id="oiDateLabel" class="date-label">—</span><button class="secondary" onclick="oiPage(1)">Next →</button></div>
 <p class="small-note">Participant-wise long, short and net open interest in contracts.</p>
-<div class="table-wrap"><table><thead><tr><th>Trade Date</th><th>Participant</th><th>Long OI</th><th>Short OI</th><th>Net OI</th><th>Previous Net OI</th><th>Change in Net OI</th></tr></thead><tbody id="indexOIBody"></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th class="date-col">Trade Date</th><th>Participant</th><th>Long OI</th><th>Short OI</th><th>Net OI</th><th>Previous Net OI</th><th>Change in Net OI</th></tr></thead><tbody id="indexOIBody"></tbody></table></div>
 </div>
 <div class="institutional-panel">
 <h3>Derivatives — Stock Futures <span class="source-label" id="stockOISourceDate"></span></h3>
@@ -172,13 +181,13 @@ body{max-width:1600px;margin:0 auto}
 <h3>Derivatives Trading Volume <span class="source-label" id="volumeSourceDate"></span></h3>
 <div class="period-controls"><label for="volumePeriod">View:</label><select id="volumePeriod" onchange="volumeIndex=0;renderVolume()"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><button class="secondary" onclick="volumePage(-1)">← Previous</button><span id="volumeDateLabel" class="date-label">—</span><button class="secondary" onclick="volumePage(1)">Next →</button></div>
 <p class="small-note">Participant-wise traded contracts, separately for Index Futures and Stock Futures.</p>
-<div class="table-wrap"><table><thead><tr><th>Trade Date / Week</th><th>Participant</th><th>Segment</th><th>Buy Contracts</th><th>Sell Contracts</th><th>Total Volume</th><th>Net Buy / Sell</th><th>Source</th></tr></thead><tbody id="volumeBody"></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th class="date-col">Trade Date / Week</th><th>Participant</th><th>Segment</th><th>Buy Contracts</th><th>Sell Contracts</th><th>Total Volume</th><th>Net Buy / Sell</th></tr></thead><tbody id="volumeBody"></tbody></table></div>
 </div>
 <div class="institutional-panel">
 <h3>FII Derivatives Statistics <span class="source-label" id="fiiSourceDate"></span></h3>
 <div class="period-controls"><label for="fiiPeriod">View:</label><select id="fiiPeriod" onchange="fiiIndex=0;renderFII()"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><button class="secondary" onclick="fiiPage(-1)">← Previous</button><span id="fiiDateLabel" class="date-label">—</span><button class="secondary" onclick="fiiPage(1)">Next →</button></div>
 <p class="small-note">FII buy/sell activity, net values and end-of-day open interest.</p>
-<div class="table-wrap"><table><thead><tr><th>Trade Date</th><th>Segment</th><th>Buy Contracts</th><th>Buy Value (₹ Cr)</th><th>Sell Contracts</th><th>Sell Value (₹ Cr)</th><th>Net Buy / Sell (Contracts)</th><th>Net Buy / Sell (₹ Cr)</th><th>EOD OI (Contracts)</th><th>EOD OI (₹ Cr)</th><th>Source</th></tr></thead><tbody id="fiiBody"></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th class="date-col">Trade Date</th><th>Segment</th><th>Buy Contracts</th><th>Buy Value (₹ Cr)</th><th>Sell Contracts</th><th>Sell Value (₹ Cr)</th><th>Net Buy / Sell (Contracts)</th><th>Net Buy / Sell (₹ Cr)</th><th>EOD OI (Contracts)</th><th>EOD OI (₹ Cr)</th></tr></thead><tbody id="fiiBody"></tbody></table></div>
 </div>
 <div class="institutional-panel">
 <h2>Global Market Indicators</h2><p class="small-note">Global interest-rate and currency context relevant to foreign capital flows.</p>
@@ -329,7 +338,7 @@ function renderCash(){
  }else setText("cashDateLabel",ds);
  setText("cashNote",rows.some(r=>/special|muhurat/i.test(r.Session_Type||""))?"Special/Muhurat session: avoid direct comparison with regular full sessions.":"Source date shown; blank source values are not treated as zero.");
  const body=document.getElementById("cashBody");body.innerHTML="";
- rows.forEach(r=>body.insertAdjacentHTML("beforeend",`<tr><td>${esc(r.Trade_Date||r.Week_Label||ds)}</td><td>${esc(r.Session_Type||"—")}</td><td>${esc(r.Category)}</td><td>${fmt(r.Buy_Value_Cr)}</td><td>${fmt(r.Sell_Value_Cr)}</td><td class="${cls(r.Net_Value_Cr)}">${fmt(r.Net_Value_Cr)}</td><td>${esc(r.Source||"—")}</td></tr>`));
+ rows.forEach(r=>body.insertAdjacentHTML("beforeend",`<tr><td class="date-col">${esc(r.Trade_Date||r.Week_Label||ds)}</td><td>${esc(r.Category)}</td><td>${fmt(r.Buy_Value_Cr)}</td><td>${fmt(r.Sell_Value_Cr)}</td><td class="${cls(r.Net_Value_Cr)}">${fmt(r.Net_Value_Cr)}</td></tr>`));
 }
 function aggregateCash(rows){
  const map={};rows.forEach(r=>{const k=r.Category;map[k]??={Category:k,Session_Type:rows.some(x=>/special|muhurat/i.test(x.Session_Type||""))?"Special / Muhurat":"Regular",Buy_Value_Cr:0,Sell_Value_Cr:0,Net_Value_Cr:0,Source:r.Source,Week_Label:"Weekly total"};
@@ -345,7 +354,7 @@ function renderVolume(){
  if(period==="weekly"){const wk=weekKey(d);rows=volumeRows.filter(r=>weekKey(date(r.Trade_Date))===wk);setText("volumeDateLabel",`${rows.map(r=>date(r.Trade_Date)).sort()[0]} to ${rows.map(r=>date(r.Trade_Date)).sort().at(-1)} (week)`);rows=aggregateVolume(rows)}
  else setText("volumeDateLabel",d);
  const body=document.getElementById("volumeBody");body.innerHTML="";
- rows.forEach(r=>body.insertAdjacentHTML("beforeend",`<tr><td>${esc(r.Trade_Date||d)}</td><td>${esc(r.Participant)}</td><td>${esc(r.Segment)}</td><td>${fmt(r.Buy_Contracts)}</td><td>${fmt(r.Sell_Contracts)}</td><td>${fmt(r.Total_Volume_Contracts)}</td><td class="${cls(r.Net_Buy_Sell_Contracts)}">${fmt(r.Net_Buy_Sell_Contracts)}</td><td>${esc(r.Source||"—")}</td></tr>`));
+ rows.forEach(r=>body.insertAdjacentHTML("beforeend",`<tr><td class="date-col">${esc(r.Trade_Date||d)}</td><td>${esc(r.Participant)}</td><td>${esc(r.Segment)}</td><td>${fmt(r.Buy_Contracts)}</td><td>${fmt(r.Sell_Contracts)}</td><td>${fmt(r.Total_Volume_Contracts)}</td><td class="${cls(r.Net_Buy_Sell_Contracts)}">${fmt(r.Net_Buy_Sell_Contracts)}</td></tr>`));
 }
 function aggregateVolume(rows){const m={};rows.forEach(r=>{const k=r.Participant+"|"+r.Segment;m[k]??={...r,Trade_Date:"Weekly total",Buy_Contracts:0,Sell_Contracts:0,Total_Volume_Contracts:0,Net_Buy_Sell_Contracts:0};["Buy_Contracts","Sell_Contracts","Total_Volume_Contracts","Net_Buy_Sell_Contracts"].forEach(f=>{const n=num(r[f]);if(n===null)m[k][f]=null;else if(m[k][f]!==null)m[k][f]+=n})});return Object.values(m)}
 function volumePage(delta){volumeIndex+=delta;renderVolume()}
@@ -379,7 +388,7 @@ function renderFII(){
  fiiIndex=Math.max(0,Math.min(fiiIndex,dates.length-1));const d=dates[fiiIndex],period=document.getElementById("fiiPeriod").value;let rows=fiiRows.filter(r=>date(r.Trade_Date)===d);
  if(period==="weekly"){const wk=weekKey(d);rows=fiiRows.filter(r=>weekKey(date(r.Trade_Date))===wk);rows=latestOI(rows);setText("fiiDateLabel",`${d} (week-ending/latest available)`)}else setText("fiiDateLabel",d);
  const body=document.getElementById("fiiBody");body.innerHTML="";
- rows.forEach(r=>body.insertAdjacentHTML("beforeend",`<tr><td>${esc(r.Trade_Date||d)}</td><td>${esc(r.Segment)}</td><td>${fmt(r.Buy_Contracts)}</td><td>${fmt(r.Buy_Value_Cr)}</td><td>${fmt(r.Sell_Contracts)}</td><td>${fmt(r.Sell_Value_Cr)}</td><td class="${cls(r.Net_Buy_Sell_Contracts)}">${fmt(r.Net_Buy_Sell_Contracts)}</td><td class="${cls(r.Net_Buy_Sell_Value_Cr)}">${fmt(r.Net_Buy_Sell_Value_Cr)}</td><td>${fmt(r.EOD_OI_Contracts)}</td><td>${fmt(r.EOD_OI_Value_Cr)}</td><td>${esc(r.Source||"—")}</td></tr>`));
+ rows.forEach(r=>body.insertAdjacentHTML("beforeend",`<tr><td class="date-col">${esc(r.Trade_Date||d)}</td><td>${esc(r.Segment)}</td><td>${fmt(r.Buy_Contracts)}</td><td>${fmt(r.Buy_Value_Cr)}</td><td>${fmt(r.Sell_Contracts)}</td><td>${fmt(r.Sell_Value_Cr)}</td><td class="${cls(r.Net_Buy_Sell_Contracts)}">${fmt(r.Net_Buy_Sell_Contracts)}</td><td class="${cls(r.Net_Buy_Sell_Value_Cr)}">${fmt(r.Net_Buy_Sell_Value_Cr)}</td><td>${fmt(r.EOD_OI_Contracts)}</td><td>${fmt(r.EOD_OI_Value_Cr)}</td></tr>`));
 }
 function fiiPage(delta){fiiIndex+=delta;renderFII()}
 function money(v){const x=num(v);return x===null?"—":x.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
