@@ -17,7 +17,7 @@ CURRENT_DIR.mkdir(parents=True, exist_ok=True)
 ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
 
 FUTURES_REQUIRED = ["Trade_Date", "Symbol", "Expiry_Date", "Close_Price", "Open_Interest", "Volume"]
-CASH_REQUIRED = ["Trade_Date", "Symbol", "High_Price", "Low_Price", "Close_Price"]
+CASH_REQUIRED = ["Trade_Date", "Symbol", "Open_Price", "High_Price", "Low_Price", "Close_Price"]
 
 
 def read_csv_safe(path):
@@ -153,15 +153,21 @@ def build_report():
     # Add daily classification when the classifier history is available.
     class_path = DATA / "oi_classification_history.csv"
     classification = read_csv_safe(class_path)
-    if not classification.empty and {"Trade_Date", "Symbol", "Classification"}.issubset(classification.columns):
+    if not classification.empty and {"Trade_Date", "Symbol"}.issubset(classification.columns):
         classification["Trade_Date"] = pd.to_datetime(classification["Trade_Date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        class_fields = ["Trade_Date", "Symbol"]
+        for field in ["Price_Change_Pct", "OI_Change_Pct", "Classification"]:
+            if field in classification.columns:
+                class_fields.append(field)
         report = report.merge(
-            classification[["Trade_Date", "Symbol", "Classification"]].drop_duplicates(
+            classification[class_fields].drop_duplicates(
                 ["Trade_Date", "Symbol"], keep="last"
             ),
             on=["Trade_Date", "Symbol"], how="left"
         )
-        columns.append("Classification")
+        for field in ["Price_Change_Pct", "OI_Change_Pct", "Classification"]:
+            if field in report.columns and field not in columns:
+                columns.append(field)
     report = report[[c for c in columns if c in report.columns]]
 
     current_month = report["Report_Month"].max()
