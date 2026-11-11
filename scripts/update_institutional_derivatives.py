@@ -23,10 +23,19 @@ OI_FILE = OUT / "derivatives_oi.csv"
 VOLUME_FILE = OUT / "derivatives_volume.csv"
 FII_FILE = OUT / "fii_derivatives_stats.csv"
 
-BASE_URLS = [
-    "https://nsearchives.nseindia.com/content/fo/",
-    "https://archives.nseindia.com/content/fo/",
-]
+# Participant OI and volume reports are published in NSE's NSCCL
+# archive directory. FII derivatives statistics remain in the FO directory.
+# The former participant /content/fo/ paths returned 404 for valid reports.
+REPORT_BASE_URLS = {
+    "participant": [
+        "https://archives.nseindia.com/content/nsccl/",
+        "https://nsearchives.nseindia.com/content/nsccl/",
+    ],
+    "fii": [
+        "https://nsearchives.nseindia.com/content/fo/",
+        "https://archives.nseindia.com/content/fo/",
+    ],
+}
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
     "Accept": "*/*",
@@ -61,14 +70,49 @@ FII_SEGMENTS = {
 }
 
 
-def download(session, filename):
-    for base in BASE_URLS:
+def download(session, filename, report_kind):
+    """Download from the NSE directory used by this report family."""
+    for base in REPORT_BASE_URLS[report_kind]:
+        url = base + filename
         try:
-            response = session.get(base + filename, timeout=30)
-            if response.status_code == 200 and response.content:
-                return response.content
+            response = session.get(url, timeout=30)
+            content = response.content or b""
+            content_type = response.headers.get("Content-Type", "")
+            if response.status_code != 200 or not content:
+                print(
+                    f"NSE download miss: {filename} via {base} "
+                    f"HTTP {response.status_code}; bytes={len(content)}"
+                )
+                continue
+
+            prefix = content[:500].lstrip().lower()
+            if prefix.startswith(b"<!doctype html") or prefix.startswith(b"<html"):
+                print(f"NSE returned an HTML page instead of {filename} via {base}")
+                continue
+
+            if report_kind == "participant":
+                sample = content[:5000].lower()
+                if b"client type" not in sample or b"future index long" not in sample:
+                    print(
+                        f"Response is not a participant CSV: {filename} via {base} "
+                        f"(Content-Type: {content_type})"
+                    )
+                    continue
+            elif report_kind == "fii":
+                if not content.startswith(bytes.fromhex("D0CF11E0A1B11AE1")):
+                    print(
+                        f"Response is not an XLS file: {filename} via {base} "
+                        f"(Content-Type: {content_type})"
+                    )
+                    continue
+
+            print(
+                f"Downloaded {filename} via {base} "
+                f"({len(content)} bytes; {content_type or 'content type not supplied'})"
+            )
+            return content
         except requests.RequestException as exc:
-            print(f"Download failed for {filename}: {exc}")
+            print(f"Download failed for {url}: {exc}")
     return None
 
 
@@ -179,9 +223,9 @@ def main():
         fii_date = report_date.strftime("%d-%b-%Y")
         trade_date = report_date.strftime("%Y-%m-%d")
 
-        oi_bytes = download(session, f"fao_participant_oi_{compact}.csv")
-        volume_bytes = download(session, f"fao_participant_vol_{compact}.csv")
-        fii_bytes = download(session, f"fii_stats_{fii_date}.xls")
+        oi_bytes = download(session, f"fao_participant_oi_{compact}.csv", "participant")
+        volume_bytes = download(session, f"fao_participant_vol_{compact}.csv", "participant")
+        fii_bytes = download(session, f"fii_stats_{fii_date}.xls", "fii")
 
         if not all([oi_bytes, volume_bytes, fii_bytes]):
             print(f"No complete NSE report set for {trade_date}; checking previous date.")
