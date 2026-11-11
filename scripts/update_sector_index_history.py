@@ -1,7 +1,6 @@
 # ============================================================
 # AURORA SECTOR INDEX HISTORY UPDATER
-# Source: NSE daily all-indices archive CSV.
-# Retains mapped index history; skips weekends and holidays.
+# Daily NSE all-indices archive; backfills recent missing sessions.
 # ============================================================
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -21,44 +20,43 @@ HEADERS = {
     "Accept": "text/csv,*/*",
     "Referer": "https://www.nseindia.com/",
 }
-COLS = ["Trade_Date", "Index_Name", "Closing_Index_Value"]
+COLS = ["Index_Name", "Trade_Date", "Closing_Index_Value"]
 
 
 def load_mapping():
     if not MAP_FILE.exists():
-        raise FileNotFoundError(
-            "Missing data/stock_sector_proxy_mapping_clean.csv. Add the approved 218-stock mapping file before running."
-        )
-    m = pd.read_csv(MAP_FILE)
+        raise FileNotFoundError(f"Missing {MAP_FILE}")
+    mapping = pd.read_csv(MAP_FILE)
     required = {"Symbol", "Industry", "Mapping_Status", "Sector_Index_Proxy", "Proxy_Type", "Proxy_Available"}
-    if not required.issubset(m.columns):
-        raise ValueError(f"Sector mapping missing columns: {sorted(required - set(m.columns))}")
-    return m
+    if not required.issubset(mapping.columns):
+        raise ValueError(f"Sector mapping missing columns: {sorted(required - set(mapping.columns))}")
+    mapping["Proxy_Available"] = mapping["Proxy_Available"].astype(str).str.strip().str.lower().isin(["true", "1", "yes"])
+    return mapping
 
 
 def download_day(day):
     url = f"https://archives.nseindia.com/content/indices/ind_close_all_{day:%d%m%Y}.csv"
     try:
-        r = requests.get(url, headers=HEADERS, timeout=35)
-        if r.status_code != 200 or not r.text.strip():
+        response = requests.get(url, headers=HEADERS, timeout=35)
+        if response.status_code != 200 or not response.content:
             return None
-        raw = pd.read_csv(io.StringIO(r.text))
-        # NSE archive header variants seen across versions.
-        name_col = next((c for c in raw.columns if c.strip().lower() == "index name"), None)
-        close_col = next((c for c in raw.columns if c.strip().lower() in {"closing", "closing index value"}), None)
-        date_col = next((c for c in raw.columns if c.strip().lower() in {"index date", "index_date", "date"}), None)
+        raw = pd.read_csv(io.BytesIO(response.content))
+        raw.columns = [str(c).strip() for c in raw.columns]
+        name_col = next((c for c in raw.columns if c.lower() == "index name"), None)
+        close_col = next((c for c in raw.columns if c.lower() in {"closing", "closing index value"}), None)
+        date_col = next((c for c in raw.columns if c.lower() in {"index date", "index_date", "date"}), None)
         if not name_col or not close_col:
-            raise ValueError(f"Unexpected NSE indices CSV columns: {list(raw.columns)}")
-        out = pd.DataFrame()
-        out["Index_Name"] = raw[name_col].astype(str).str.strip()
-        out["Closing_Index_Value"] = pd.to_numeric(raw[close_col], errors="coerce")
+            raise ValueError(f"Unexpected NSE index CSV columns: {raw.columns.tolist()}")
+        out = pd.DataFrame({
+            "Index_Name": raw[name_col].astype(str).str.strip(),
+            "Closing_Index_Value": pd.to_numeric(raw[close_col], errors="coerce"),
+        })
         if date_col:
             parsed = pd.to_datetime(raw[date_col], dayfirst=True, errors="coerce")
             out["Trade_Date"] = parsed.dt.strftime("%Y-%m-%d")
-            out = out[out["Trade_Date"].notna()]
         else:
             out["Trade_Date"] = day.strftime("%Y-%m-%d")
-        out = out.dropna(subset=["Closing_Index_Value"])
+        out = out.dropna(subset=["Closing_Index_Value", "Trade_Date"])
         out = out[out["Trade_Date"] == day.strftime("%Y-%m-%d")]
         return out[COLS]
     except Exception as exc:
@@ -68,51 +66,56 @@ def download_day(day):
 
 def main():
     mapping = load_mapping()
-    proxies = set(mapping.loc[mapping["Proxy_Available"].astype(str).str.lower().isin(["true", "1", "yes"]), "Sector_Index_Proxy"].dropna().astype(str))
-    if HISTORY_FILE.exists():
-        history = pd.read_csv(HISTORY_FILE)
-    else:
-        history = pd.DataFrame(columns=COLS)
-    for c in COLS:
-        if c not in history.columns:
-            history[c] = pd.Series(dtype="object")
-    history = history[COLS]
+    proxies = set(mapping.loc[mapping["Proxy_Available"], "Sector_Index_Proxy"].dropna().astype(str).str.strip())
+    if not proxies:
+        raise RuntimeError("No available sector index proxies found in mapping.")
+
+    history = pd.read_csv(HISTORY_FILE) if HISTORY_FILE.exists() else pd.DataFrame(columns=COLS)
+    if not set(COLS).issubset(history.columns):
+        raise ValueError(f"Sector history requires columns: {COLS}")
+    history = history[COLS].copy()
     history["Trade_Date"] = pd.to_datetime(history["Trade_Date"], errors="coerce").dt.strftime("%Y-%m-%d")
     history["Index_Name"] = history["Index_Name"].astype(str).str.strip()
     history["Closing_Index_Value"] = pd.to_numeric(history["Closing_Index_Value"], errors="coerce")
     history = history.dropna(subset=["Trade_Date", "Closing_Index_Value"])
-    # Search recent days so the job gracefully handles holidays and late NSE publication.
-    fetched = False
-    for offset in range(0, 11):
+    history = history[history["Index_Name"].isin(proxies)]
+
+    # Backfill the recent 15 calendar days, covering weekends and NSE holidays.
+    added = 0
+    for offset in range(0, 16):
         day = TODAY - timedelta(days=offset)
         if day.weekday() >= 5:
             continue
         date_text = day.strftime("%Y-%m-%d")
-        if ((history["Trade_Date"] == date_text) & history["Index_Name"].isin(proxies)).any():
-            fetched = True
-            break
+        present = set(history.loc[history["Trade_Date"] == date_text, "Index_Name"])
+        if proxies.issubset(present):
+            continue
         daily = download_day(day)
-        if daily is not None and not daily.empty:
-            daily = daily[daily["Index_Name"].isin(proxies)]
-            if not daily.empty:
-                history = pd.concat([history, daily], ignore_index=True)
-                print(f"Downloaded {len(daily)} mapped index rows for {date_text}")
-                fetched = True
-                break
-        time.sleep(1.2)
-    if not fetched:
-        print("No new mapped index archive found; retaining previous sector history.")
+        if daily is None or daily.empty:
+            time.sleep(0.5)
+            continue
+        daily = daily[daily["Index_Name"].isin(proxies)]
+        if daily.empty:
+            continue
+        history = pd.concat([history, daily], ignore_index=True)
+        added += len(daily)
+        print(f"Backfilled {len(daily)} mapped indices for {date_text}")
+        time.sleep(0.8)
+
     history = history.drop_duplicates(["Trade_Date", "Index_Name"], keep="last")
-    history = history.sort_values(["Index_Name", "Trade_Date"])
-    # Keep at least 100 sessions per mapped proxy; do not trim a shorter initial history.
     history["Trade_Date_dt"] = pd.to_datetime(history["Trade_Date"], errors="coerce")
     history = history.sort_values(["Index_Name", "Trade_Date_dt"])
     history = history.groupby("Index_Name", group_keys=False).tail(120)
     history = history[COLS].sort_values(["Trade_Date", "Index_Name"])
-    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
     history.to_csv(HISTORY_FILE, index=False)
-    latest = history["Trade_Date"].max() if not history.empty else "unavailable"
-    print(f"Sector index history saved; latest session: {latest}; rows: {len(history)}")
+
+    latest_by_index = history.groupby("Index_Name")["Trade_Date"].max().to_dict()
+    lagging = {k: v for k, v in latest_by_index.items() if v != max(latest_by_index.values())}
+    print(f"Sector history saved. Added rows: {added}. Proxies: {len(proxies)}. Rows: {len(history)}")
+    if lagging:
+        print("WARNING: proxy histories do not share the same latest date:", lagging)
+    else:
+        print("All mapped proxies have the same latest date:", max(latest_by_index.values()))
 
 
 if __name__ == "__main__":
