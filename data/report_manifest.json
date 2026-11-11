@@ -2,7 +2,7 @@
   "current_month": "2026-11",
   "archive_months": [],
   "current_file": "data/current_month/current_cycle.csv",
-  "generated_at": "2026-11-11 18:53:57 IST",
+  "generated_at": "2026-11-11 19:27:15 IST",
   "adr_method": "Cash-market equity OHLC; rolling 14 trading sessions; prior-month sessions used as warm-up.",
   "backtesting": false
 }
