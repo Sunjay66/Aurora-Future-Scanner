@@ -3,7 +3,8 @@ name: Aurora Futures OI Tracker
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 13 * * 1-5"
+    # 4:30 PM IST (11:00 UTC), Monday to Friday.
+    - cron: "0 11 * * 1-5"
 
 permissions:
   contents: write
@@ -26,18 +27,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Aurora OI Tracker
-        run: |
-          python scripts/update_oi_tracker.py
+      - name: Update futures OI tracker
+        run: python scripts/update_oi_tracker.py
 
-      - name: Run OI Classification
-        run: |
-          python scripts/classify_futures_oi.py
-          
-      - name: Commit updated tracker data
+      - name: Rebuild OI classification history
+        run: python scripts/classify_futures_oi.py
+
+      - name: Download cash-market OHLC history for ADR-14
+        run: python scripts/update_cash_market_history.py
+
+      - name: Generate current-month report and archive
+        run: python scripts/generate_stock_reports.py
+
+      - name: Commit updated tracker and report data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/
-          git diff --cached --quiet || git commit -m "Update futures OI tracker data"
+          git diff --cached --quiet || git commit -m "Update futures tracker and monthly stock reports"
           git push
