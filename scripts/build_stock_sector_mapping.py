@@ -1,9 +1,10 @@
-"""Build an auditable F&O-stock to NSE sector-index mapping.
+"""Map all current F&O stocks to their most relevant NSE sectoral index.
 
-Constituents are downloaded from NSE Indices official CSV endpoints. A single
-primary index is assigned using a documented specificity order; all matching
-indices are retained in a separate field for audit. Unmatched stocks remain
-UNMAPPED rather than being guessed.
+Primary assignments are based on official NSE Indices sectoral-index
+constituent CSVs. If a stock belongs to more than one index, the explicit
+priority below selects the closest/specialist sector index. No company is
+assigned to a sector without constituent evidence; residuals remain UNMAPPED
+for a separate industry-classification review.
 """
 from __future__ import annotations
 
@@ -21,41 +22,63 @@ ACTIVITY = ROOT / "data" / "stock_activity_history.csv"
 MAPPING = ROOT / "data" / "stock_sector_mapping.csv"
 TEMP = MAPPING.with_suffix(".csv.tmp")
 IST = ZoneInfo("Asia/Kolkata")
+BASE = "https://www.niftyindices.com/IndexConstituent/"
 
-# Official NSE Indices constituent CSV endpoints.
-INDEX_URLS = {
-    "NIFTY AUTO": "https://www.niftyindices.com/IndexConstituent/ind_niftyautolist.csv",
-    "NIFTY BANK": "https://www.niftyindices.com/IndexConstituent/ind_niftybanklist.csv",
-    "NIFTY PSU BANK": "https://www.niftyindices.com/IndexConstituent/ind_niftypsubanklist.csv",
-    "NIFTY PRIVATE BANK": "https://www.niftyindices.com/IndexConstituent/ind_nifty_privatebanklist.csv",
-    "NIFTY IT": "https://www.niftyindices.com/IndexConstituent/ind_niftyitlist.csv",
-    "NIFTY PHARMA": "https://www.niftyindices.com/IndexConstituent/ind_niftypharmalist.csv",
-    "NIFTY METAL": "https://www.niftyindices.com/IndexConstituent/ind_niftymetallist.csv",
-    "NIFTY FMCG": "https://www.niftyindices.com/IndexConstituent/ind_niftyfmcglist.csv",
-    "NIFTY REALTY": "https://www.niftyindices.com/IndexConstituent/ind_niftyrealtylist.csv",
-    "NIFTY FINANCIAL SERVICES": "https://www.niftyindices.com/IndexConstituent/ind_niftyfinancelist.csv",
-    "NIFTY MEDIA": "https://www.niftyindices.com/IndexConstituent/ind_niftymedialist.csv",
-    "NIFTY HEALTHCARE": "https://www.niftyindices.com/IndexConstituent/ind_niftyhealthcarelist.csv",
-    "NIFTY OIL & GAS": "https://www.niftyindices.com/IndexConstituent/ind_niftyoilgaslist.csv",
-    "NIFTY ENERGY": "https://www.niftyindices.com/IndexConstituent/ind_niftyenergylist.csv",
+# Official constituent download endpoints. Existing legacy endpoints are
+# retained; newer sectoral series use the current *_list.csv naming.
+INDEX_FILES = {
+    "NIFTY PSU BANK": "ind_niftypsubanklist.csv",
+    "NIFTY PRIVATE BANK": "ind_nifty_privatebanklist.csv",
+    "NIFTY BANK": "ind_niftybanklist.csv",
+    "NIFTY AUTO": "ind_niftyautolist.csv",
+    "NIFTY IT": "ind_niftyitlist.csv",
+    "NIFTY PHARMA": "ind_niftypharmalist.csv",
+    "NIFTY METAL": "ind_niftymetallist.csv",
+    "NIFTY FMCG": "ind_niftyfmcglist.csv",
+    "NIFTY REALTY": "ind_niftyrealtylist.csv",
+    "NIFTY FINANCIAL SERVICES": "ind_niftyfinancelist.csv",
+    "NIFTY MEDIA": "ind_niftymedialist.csv",
+    "NIFTY HEALTHCARE": "ind_niftyhealthcarelist.csv",
+    "NIFTY OIL & GAS": "ind_niftyoilgaslist.csv",
+    "NIFTY ENERGY": "ind_niftyenergylist.csv",
+    "NIFTY CAPITAL GOODS": "ind_niftyCapitalGoods_list.csv",
+    "NIFTY CEMENT": "ind_niftyCement_list.csv",
+    "NIFTY CHEMICALS": "ind_niftyChemicals_list.csv",
+    "NIFTY COMMERCIAL & TRANSPORT SERVICES": "ind_niftyCommercialandTransportServices_list.csv",
+    "NIFTY CONSTRUCTION": "ind_niftyConstruction_list.csv",
+    "NIFTY CONSUMER DURABLES": "ind_niftyConsumerDurables_list.csv",
+    "NIFTY CONSUMER SERVICES": "ind_niftyConsumerServices_list.csv",
+    "NIFTY FINANCIAL SERVICES EX BANK": "ind_niftyFinancialServicesExBank_list.csv",
+    "NIFTY HOSPITALS": "ind_niftyHospitals_list.csv",
+    "NIFTY HOUSING FINANCE": "ind_niftyHousingFinance_list.csv",
+    "NIFTY INSURANCE": "ind_niftyInsurance_list.csv",
+    "NIFTY NBFC": "ind_niftyNBFC_list.csv",
+    "NIFTY POWER": "ind_niftyPower_list.csv",
+    "NIFTY RETAIL": "ind_niftyRetail_list.csv",
+    "NIFTY TELECOMMUNICATIONS": "ind_niftyTelecommunications_list.csv",
+    "NIFTY REITS & REALTY": "ind_niftyREITsRealty_list.csv",
+    "NIFTY500 HEALTHCARE": "ind_nifty500Healthcare_list.csv",
+    "NIFTY MIDSMALL FINANCIAL SERVICES": "ind_niftyMidSmallFinancialServices_list.csv",
+    "NIFTY MIDSMALL HEALTHCARE": "ind_niftyMidSmallHealthcare_list.csv",
+    "NIFTY MIDSMALL IT & TELECOM": "ind_niftyMidSmallITandTelecom_list.csv",
 }
+INDEX_URLS = {name: BASE + filename for name, filename in INDEX_FILES.items()}
 
-# More specific banking indices take precedence over the broad Nifty Bank.
+# Sector-specialist priority prevents broad indices (Bank/Financial Services)
+# from overriding a more specific industry index.
 PRIMARY_PRIORITY = [
-    "NIFTY PSU BANK",
-    "NIFTY PRIVATE BANK",
-    "NIFTY AUTO",
-    "NIFTY IT",
-    "NIFTY PHARMA",
-    "NIFTY FMCG",
-    "NIFTY METAL",
-    "NIFTY REALTY",
-    "NIFTY MEDIA",
-    "NIFTY HEALTHCARE",
-    "NIFTY OIL & GAS",
-    "NIFTY ENERGY",
-    "NIFTY BANK",
-    "NIFTY FINANCIAL SERVICES",
+    "NIFTY PSU BANK", "NIFTY PRIVATE BANK", "NIFTY BANK",
+    "NIFTY INSURANCE", "NIFTY NBFC", "NIFTY HOUSING FINANCE",
+    "NIFTY FINANCIAL SERVICES EX BANK", "NIFTY FINANCIAL SERVICES",
+    "NIFTY AUTO", "NIFTY IT", "NIFTY TELECOMMUNICATIONS",
+    "NIFTY PHARMA", "NIFTY HOSPITALS", "NIFTY HEALTHCARE",
+    "NIFTY MIDSMALL HEALTHCARE", "NIFTY500 HEALTHCARE",
+    "NIFTY FMCG", "NIFTY CONSUMER DURABLES", "NIFTY CONSUMER SERVICES",
+    "NIFTY RETAIL", "NIFTY MEDIA", "NIFTY METAL", "NIFTY CEMENT",
+    "NIFTY CHEMICALS", "NIFTY CAPITAL GOODS", "NIFTY CONSTRUCTION",
+    "NIFTY COMMERCIAL & TRANSPORT SERVICES", "NIFTY REALTY",
+    "NIFTY REITS & REALTY", "NIFTY OIL & GAS", "NIFTY POWER",
+    "NIFTY ENERGY", "NIFTY MIDSMALL IT & TELECOM",
 ]
 
 HEADERS = {
@@ -63,7 +86,6 @@ HEADERS = {
     "Accept": "text/csv,text/plain,*/*",
     "Referer": "https://www.niftyindices.com/",
 }
-
 OUTPUT_COLUMNS = [
     "Symbol", "Primary_Sector_Index", "All_Matching_Indices",
     "Mapping_Status", "Mapping_Source", "Mapping_Refresh_IST",
@@ -74,16 +96,16 @@ def fetch_constituents(session: requests.Session, index_name: str, url: str) -> 
     response = session.get(url, timeout=40)
     response.raise_for_status()
     if len(response.content) < 50:
-        raise ValueError(f"{index_name}: constituent CSV unexpectedly small ({len(response.content)} bytes)")
+        raise ValueError(f"CSV unexpectedly small ({len(response.content)} bytes)")
     frame = pd.read_csv(io.BytesIO(response.content), encoding="utf-8-sig")
     frame.columns = [str(c).replace("\ufeff", "").strip() for c in frame.columns]
     symbol_col = next((c for c in frame.columns if c.lower() in {"symbol", "ticker"}), None)
     if not symbol_col:
-        raise ValueError(f"{index_name}: no Symbol column; received {list(frame.columns)}")
+        raise ValueError(f"No Symbol column; received {list(frame.columns)}")
     symbols = set(frame[symbol_col].dropna().astype(str).str.strip().str.upper())
     symbols = {s for s in symbols if s and s not in {"NAN", "SYMBOL"}}
     if not symbols:
-        raise ValueError(f"{index_name}: parsed zero constituent symbols")
+        raise ValueError("Parsed zero constituent symbols")
     return symbols
 
 
@@ -105,12 +127,12 @@ def main() -> int:
             print(f"OK {index_name}: {len(constituents[index_name])} constituents")
         except Exception as exc:
             failures[index_name] = f"{type(exc).__name__}: {exc}"
-            print(f"WARNING {index_name}: constituent list unavailable: {failures[index_name]}")
+            print(f"WARNING {index_name}: {failures[index_name]}")
 
     essential = {"NIFTY PSU BANK", "NIFTY PRIVATE BANK", "NIFTY BANK", "NIFTY IT"}
     if not essential.issubset(constituents):
         raise RuntimeError(
-            "Essential index constituent lists unavailable; refusing to create partial mapping. "
+            "Essential constituent lists unavailable; refusing partial mapping. "
             f"Missing: {sorted(essential - set(constituents))}"
         )
 
@@ -124,15 +146,15 @@ def main() -> int:
             "Primary_Sector_Index": primary,
             "All_Matching_Indices": "|".join(matches),
             "Mapping_Status": "MAPPED" if matches else "UNMAPPED",
-            "Mapping_Source": "NSE Indices official constituent CSV",
+            "Mapping_Source": "NSE Indices official sectoral constituent CSV",
             "Mapping_Refresh_IST": refresh,
         })
 
     result = pd.DataFrame(rows, columns=OUTPUT_COLUMNS)
-    mapped = int((result["Mapping_Status"] == "MAPPED").sum())
-    unmapped = int((result["Mapping_Status"] == "UNMAPPED").sum())
     if len(result) != len(fo_symbols) or result["Symbol"].duplicated().any():
         raise RuntimeError("Mapping output failed one-row-per-stock validation.")
+    mapped = int(result["Mapping_Status"].eq("MAPPED").sum())
+    unmapped = len(result) - mapped
     if mapped == 0:
         raise RuntimeError("No F&O stocks mapped; refusing to write.")
 
@@ -149,9 +171,11 @@ def main() -> int:
     print("Primary index counts:")
     print(result["Primary_Sector_Index"].value_counts().to_string())
     if failures:
-        print("Unavailable optional constituent lists:")
+        print("Unavailable index lists (review required):")
         for name, reason in failures.items():
             print(f" - {name}: {reason}")
+    if unmapped:
+        print("UNMAPPED SYMBOLS: " + ", ".join(result.loc[result["Mapping_Status"] == "UNMAPPED", "Symbol"]))
     print(f"Saved: {MAPPING}")
     return 0
 
