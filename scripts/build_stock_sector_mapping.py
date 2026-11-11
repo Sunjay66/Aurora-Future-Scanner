@@ -81,6 +81,27 @@ PRIMARY_PRIORITY = [
     "NIFTY ENERGY", "NIFTY MIDSMALL IT & TELECOM",
 ]
 
+# Explicit provisional benchmark assignments for current F&O stocks that are
+# not members of any downloaded sectoral-index constituent list. These are
+# industry-based proxies, NOT claims of index membership. Keep this separate
+# from constituent matches so the dashboard can disclose the distinction.
+INDUSTRY_PROXY_ASSIGNMENTS = {
+    "ANANDRATHI": ("NIFTY FINANCIAL SERVICES EX BANK", "Wealth management / financial products distribution"),
+    "ASIANPAINT": ("NIFTY CHEMICALS", "Paints and coatings"),
+    "ATHERENERG": ("NIFTY AUTO", "Electric two-wheelers"),
+    "CUB": ("NIFTY BANK", "Private-sector banking"),
+    "FORCEMOT": ("NIFTY AUTO", "Automobile manufacturing"),
+    "IEX": ("NIFTY ENERGY", "Power exchange / energy market infrastructure"),
+    "IREDA": ("NIFTY FINANCIAL SERVICES EX BANK", "Renewable-energy financing institution"),
+    "KARURVYSYA": ("NIFTY BANK", "Private-sector banking"),
+    "KFINTECH": ("NIFTY FINANCIAL SERVICES EX BANK", "Financial technology / registrar and transfer agency"),
+    "MOTILALOFS": ("NIFTY FINANCIAL SERVICES EX BANK", "Capital markets / broking and wealth management"),
+    "NAM-INDIA": ("NIFTY FINANCIAL SERVICES EX BANK", "Asset management"),
+    "PAGEIND": ("NIFTY CONSUMER DURABLES", "Apparel / branded garments; consumer discretionary proxy"),
+    "SYRMA": ("NIFTY CONSUMER DURABLES", "Electronics manufacturing services; electronics proxy"),
+    "UJJIVANSFB": ("NIFTY BANK", "Small finance banking"),
+}
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
     "Accept": "text/csv,text/plain,*/*",
@@ -88,7 +109,8 @@ HEADERS = {
 }
 OUTPUT_COLUMNS = [
     "Symbol", "Primary_Sector_Index", "All_Matching_Indices",
-    "Mapping_Status", "Mapping_Source", "Mapping_Refresh_IST",
+    "Mapping_Status", "Mapping_Type", "Industry_Description",
+    "Mapping_Source", "Mapping_Refresh_IST",
 ]
 
 
@@ -164,13 +186,33 @@ def main() -> int:
     rows = []
     for symbol in fo_symbols:
         matches = [name for name in PRIMARY_PRIORITY if name in constituents and symbol in constituents[name]]
-        primary = matches[0] if matches else "UNMAPPED"
+        if matches:
+            primary = matches[0]
+            mapping_type = "OFFICIAL_INDEX_CONSTITUENT"
+            industry_description = ""
+            mapping_source = "NSE Indices official sectoral constituent CSV"
+            status = "MAPPED"
+        elif symbol in INDUSTRY_PROXY_ASSIGNMENTS:
+            primary, industry_description = INDUSTRY_PROXY_ASSIGNMENTS[symbol]
+            if primary not in INDEX_URLS:
+                raise RuntimeError(f"Proxy index {primary} for {symbol} is not configured.")
+            mapping_type = "INDUSTRY_BASED_PROXY"
+            mapping_source = "Provisional business-industry assignment; not confirmed index membership"
+            status = "MAPPED"
+        else:
+            primary = "UNMAPPED"
+            industry_description = ""
+            mapping_type = "UNMAPPED"
+            mapping_source = "No official constituent match or approved industry proxy"
+            status = "UNMAPPED"
         rows.append({
             "Symbol": symbol,
             "Primary_Sector_Index": primary,
             "All_Matching_Indices": "|".join(matches),
-            "Mapping_Status": "MAPPED" if matches else "UNMAPPED",
-            "Mapping_Source": "NSE Indices official sectoral constituent CSV",
+            "Mapping_Status": status,
+            "Mapping_Type": mapping_type,
+            "Industry_Description": industry_description,
+            "Mapping_Source": mapping_source,
             "Mapping_Refresh_IST": refresh,
         })
 
@@ -192,6 +234,8 @@ def main() -> int:
     print("=" * 68)
     print(f"SUCCESS: mapping created for {len(result)} F&O stocks.")
     print(f"Mapped: {mapped}; unmapped: {unmapped}")
+    print(f"Official index constituents: {int(result['Mapping_Type'].eq('OFFICIAL_INDEX_CONSTITUENT').sum())}")
+    print(f"Industry-based benchmark proxies: {int(result['Mapping_Type'].eq('INDUSTRY_BASED_PROXY').sum())}")
     print("Primary index counts:")
     print(result["Primary_Sector_Index"].value_counts().to_string())
     if failures:
