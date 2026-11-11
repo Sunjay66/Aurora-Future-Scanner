@@ -101,12 +101,12 @@ def load_delivery():
 
 
 def load_sector_data():
-    mapping_path = DATA / "stock_sector_proxy_mapping.csv"
-    history_path = DATA / "sector_index_history.csv"
+    mapping_path = DATA / "stock_sector_proxy_mapping_clean.csv"
+    history_path = DATA / "sector_index_history_clean.csv"
     if not mapping_path.exists():
-        raise FileNotFoundError("Missing data/stock_sector_proxy_mapping.csv; import the approved stock-sector mapping.")
+        raise FileNotFoundError("Missing data/stock_sector_proxy_mapping_clean.csv; import the approved stock-sector mapping.")
     if not history_path.exists():
-        raise FileNotFoundError("Missing data/sector_index_history.csv; import the filtered 100-session sector index history.")
+        raise FileNotFoundError("Missing data/sector_index_history_clean.csv; import the filtered 100-session sector index history.")
     mapping = read_csv_safe(mapping_path)
     required = {"Symbol", "Industry", "Mapping_Status", "Sector_Index_Proxy", "Proxy_Type", "Proxy_Available"}
     if not required.issubset(mapping.columns):
