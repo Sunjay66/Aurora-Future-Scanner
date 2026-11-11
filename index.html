@@ -219,12 +219,12 @@ function renderTable(){
 function findStock(){
  const symbol=document.getElementById("stockSearch").value.trim().toUpperCase(),result=document.getElementById("lookupResult");
  if(!symbol){result.innerHTML='<div class="message error">Enter a stock symbol.</div>';return}
- const r=classificationData.find(x=>x.Symbol.toUpperCase()===symbol);
+ const r=classificationData.find(x=>x.Symbol.toUpperCase()===symbol)||futuresData.find(x=>x.Symbol.toUpperCase()===symbol);
  if(!r){result.innerHTML=`<div class="message error">Stock not found: ${esc(symbol)}</div>`;return}
  const dates=[...new Set(classificationHistoryData.map(x=>date(x.Trade_Date)))].sort(),prevDate=dates[dates.length-2];
  const p=classificationHistoryData.find(x=>date(x.Trade_Date)===prevDate&&x.Symbol===r.Symbol&&date(x.Expiry_Date)===date(r.Expiry_Date));
  result.innerHTML=`<div class="card"><h3>${esc(r.Symbol)} — Quick Lookup</h3><div class="lookup-grid">
- ${[["Current Classification",r.Classification],["Previous Classification",p?.Classification||"Not available"],["Price Change",pct(r.Price_Change_Pct)],["OI Change",pct(r.OI_Change_Pct)],["Close Price (₹)",fmt(r.Close_Price)],["OI (Contracts)",fmt(r.Open_Interest)],["Expiry",r.Expiry_Date],["Volume (Contracts)",fmt(r.Volume)]].map(([k,v])=>`<div class="lookup-item"><strong>${esc(k)}</strong>${esc(v)}</div>`).join("")}</div></div>`;
+ ${[["Current Classification",r.Classification||"Not yet classified"],["Previous Classification",p?.Classification||"Not available"],["Price Change",pct(r.Price_Change_Pct)],["OI Change",pct(r.OI_Change_Pct)],["Close Price (₹)",fmt(r.Close_Price)],["OI (Contracts)",fmt(r.Open_Interest)],["Expiry",r.Expiry_Date],["Volume (Contracts)",fmt(r.Volume)]].map(([k,v])=>`<div class="lookup-item"><strong>${esc(k)}</strong>${esc(v)}</div>`).join("")}</div><div class="controls"><button onclick="window.location.href='stock.html?symbol=${encodeURIComponent(symbol)}'">Open Detailed Stock Report →</button></div></div>`;
  document.getElementById("tableSearch").value=symbol;selectCategory("All");
 }
 function clearSearch(){document.getElementById("stockSearch").value="";document.getElementById("tableSearch").value="";document.getElementById("lookupResult").innerHTML="";selectCategory("All")}
