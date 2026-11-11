@@ -30,7 +30,7 @@ th,td{padding:10px;text-align:left;border-bottom:1px solid var(--border)}th{back
 <p class="note">ADR-14 is calculated from the underlying cash-market equity High–Low range over 14 trading sessions. The rolling window can use prior-month sessions as warm-up. Monthly price and OI changes reset with each calendar month. No backtesting is performed.</p>
 <h2>Daily Stock History</h2>
 <div class="table-wrap"><table><thead><tr>
-<th>Trade Date</th><th>Futures Close (₹)</th><th>Daily Price Change</th><th>Open Interest</th><th>Daily OI Change</th><th>Volume</th><th>Cash Close (₹)</th><th>ADR-14 (₹)</th><th>ADR-14 (%)</th><th>Delivery (%)</th><th>Monthly Price Change</th><th>Monthly OI Change</th><th>Classification</th>
+<th>Trade Date</th><th>Futures Close (₹)</th><th>Daily Price Change</th><th>Open Interest</th><th>Daily OI Change</th><th>Volume</th><th>Cash Close (₹)</th><th>ADR-14 (₹)</th><th>ADR-14 (%)</th><th>Delivery (%)</th><th>Monthly Price Change</th><th>Monthly OI Change</th><th>Mapped Sector Index</th><th>Sector Daily Change</th><th>Sector Monthly Change</th><th>Classification</th>
 </tr></thead><tbody id="historyBody"></tbody></table></div>
 <script>
 "use strict";
@@ -78,9 +78,9 @@ function render(){
   ["Current Classification",cell(latest.Classification)]
  ].map(([k,v])=>'<div class="card"><div class="label">'+k+'</div><div class="value">'+v+'</div></div>').join("");
  filtered.forEach(r=>{
-  const vals=[r.Trade_Date,f(r.Close_Price),p(r.Price_Change_Pct),f(r.Open_Interest),p(r.OI_Change_Pct),f(r.Volume),f(r.Cash_Close),f(r.ADR_14_Rs),n(r.ADR_14_Pct)===null?"—":f(r.ADR_14_Pct)+"%",n(r.Delivery_Pct)===null?"—":f(r.Delivery_Pct)+"%",p(r.Monthly_Price_Change_Pct),p(r.Monthly_OI_Change_Pct),cell(r.Classification)];
+  const vals=[r.Trade_Date,f(r.Close_Price),p(r.Price_Change_Pct),f(r.Open_Interest),p(r.OI_Change_Pct),f(r.Volume),f(r.Cash_Close),f(r.ADR_14_Rs),n(r.ADR_14_Pct)===null?"—":f(r.ADR_14_Pct)+"%",n(r.Delivery_Pct)===null?"—":f(r.Delivery_Pct)+"%",p(r.Monthly_Price_Change_Pct),p(r.Monthly_OI_Change_Pct),cell(r.Sector_Index_Proxy),p(r.Sector_Daily_Change_Pct),p(r.Sector_Monthly_Change_Pct),cell(r.Classification)];
   const tr=document.createElement("tr");
-  tr.innerHTML=vals.map((v,i)=>'<td class="'+([2,4,10,11].includes(i)?sign([r.Price_Change_Pct,r.OI_Change_Pct,r.Monthly_Price_Change_Pct,r.Monthly_OI_Change_Pct][[2,4,10,11].indexOf(i)]):"")+'">'+v+'</td>').join("");
+  tr.innerHTML=vals.map((v,i)=>'<td class="'+([2,4,10,11,13,14].includes(i)?sign([r.Price_Change_Pct,r.OI_Change_Pct,r.Monthly_Price_Change_Pct,r.Monthly_OI_Change_Pct,r.Sector_Daily_Change_Pct,r.Sector_Monthly_Change_Pct][[2,4,10,11,13,14].indexOf(i)]):"")+'">'+v+'</td>').join("");
   body.appendChild(tr);
  });
 }
