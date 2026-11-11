@@ -153,7 +153,7 @@ def download_day(session: requests.Session, day: date) -> pd.DataFrame | None:
                 continue
             try:
                 result = parse_udiff_zip(response.content, day, filename)
-                print(f"{day}: downloaded and validated {len(result)} front-month stock futures")
+                expiry_counts = result["Expiry_Date"].value_counts().to_dict()\n                print(f"{day}: downloaded and validated {len(result)} front-month stock futures; expiry distribution={expiry_counts}")
                 return result
             except Exception as exc:
                 print(f"{day}: archive received but rejected: {type(exc).__name__}: {exc}")
