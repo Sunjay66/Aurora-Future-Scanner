@@ -3,8 +3,8 @@ name: Aurora Futures OI Tracker
 on:
   workflow_dispatch:
   schedule:
-    # 4:30 PM IST (11:00 UTC), Monday to Friday.
-    - cron: "0 11 * * 1-5"
+    # 7:15 PM IST (13:45 UTC), Monday to Friday.
+    - cron: "45 13 * * 1-5"
 
 permissions:
   contents: write
