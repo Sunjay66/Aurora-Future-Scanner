@@ -30,10 +30,15 @@ HISTORY_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_FILE = DATA_DIR / "front_month_snapshot.csv"
 CLASSIFICATION_FILE = DATA_DIR / "oi_classification_history.csv"
 
-BASE_URLS = [
+UDIFF_BASE_URLS = [
     "https://nsearchives.nseindia.com/content/fo/",
     "https://archives.nseindia.com/content/fo/",
 ]
+DAT_BASE_URLS = [
+    "https://nsearchives.nseindia.com/archives/nsccl/fao/",
+    "https://archives.nseindia.com/archives/nsccl/fao/",
+]
+MIN_STOCK_SYMBOLS = 200
 
 HEADERS = {
     "User-Agent": (
@@ -45,145 +50,234 @@ HEADERS = {
 }
 
 # ------------------------------------------------------------
-# DOWNLOAD LATEST AVAILABLE BHAVCOPY
+# DOWNLOAD + NORMALIZE NSE F&O BHAVCOPY (UDiFF ZIP OR DAT)
 # ------------------------------------------------------------
 
-def download_bhavcopy():
+CANONICAL_COLUMNS = [
+    "Trade_Date", "Symbol", "Expiry_Date", "Previous_Close_Price",
+    "Open_Price", "High_Price", "Low_Price", "Close_Price",
+    "Open_Interest", "Change_In_Open_Interest", "Volume", "Turnover",
+]
 
-    session = requests.Session()
-    session.headers.update(HEADERS)
 
-    for days_back in range(0, 11):
+def validate_futures_frame(frame, expected_date, source_name):
+    """Validate date, stock coverage and core fields.
+    Deferred contracts with no trades may have zero OHLC; OHLC is checked
+    strictly only after selecting each stock's nearest unexpired contract.
+    """
+    if frame is None or frame.empty:
+        raise ValueError(f"{source_name}: empty report")
+    missing = [c for c in CANONICAL_COLUMNS if c not in frame.columns]
+    if missing:
+        raise ValueError(f"{source_name}: missing fields {missing}")
 
-        check_date = TODAY_IST - timedelta(days=days_back)
-        date_string = check_date.strftime("%Y%m%d")
+    frame = frame[CANONICAL_COLUMNS].copy()
+    frame["Trade_Date"] = pd.to_datetime(frame["Trade_Date"], errors="coerce")
+    frame["Expiry_Date"] = pd.to_datetime(frame["Expiry_Date"], errors="coerce")
+    frame["Symbol"] = frame["Symbol"].astype(str).str.strip()
+    numeric = [
+        "Previous_Close_Price", "Open_Price", "High_Price", "Low_Price",
+        "Close_Price", "Open_Interest", "Change_In_Open_Interest",
+        "Volume", "Turnover",
+    ]
+    for col in numeric:
+        frame[col] = pd.to_numeric(frame[col], errors="coerce")
 
-        filename = (
-            f"BhavCopy_NSE_FO_0_0_0_{date_string}_F_0000.csv.zip"
+    frame = frame.dropna(subset=[
+        "Trade_Date", "Expiry_Date", "Symbol", "Open_Interest", "Volume"
+    ])
+    frame = frame[frame["Symbol"].ne("")].copy()
+
+    actual_dates = set(frame["Trade_Date"].dt.date)
+    if actual_dates != {expected_date}:
+        raise ValueError(
+            f"{source_name}: expected {expected_date}, found "
+            f"{sorted(str(d) for d in actual_dates)}"
         )
 
-        for base_url in BASE_URLS:
+    frame = frame[frame["Expiry_Date"].dt.date >= expected_date].copy()
+    if (frame["Open_Interest"] < 0).any() or (frame["Volume"] < 0).any():
+        raise ValueError(f"{source_name}: negative OI or volume")
+    if frame.duplicated(["Symbol", "Expiry_Date"]).any():
+        raise ValueError(f"{source_name}: duplicate symbol/expiry contracts")
+    symbols = frame["Symbol"].nunique()
+    if symbols < MIN_STOCK_SYMBOLS:
+        raise ValueError(
+            f"{source_name}: only {symbols} stock symbols; minimum "
+            f"accepted is {MIN_STOCK_SYMBOLS}"
+        )
+    return frame.sort_values(["Symbol", "Expiry_Date"]).reset_index(drop=True)
 
-            url = base_url + filename
 
-            try:
-                print(f"Checking NSE Bhavcopy: {check_date}")
+def parse_udiff_zip(payload, expected_date):
+    with zipfile.ZipFile(io.BytesIO(payload)) as archive:
+        csv_names = [n for n in archive.namelist() if n.lower().endswith(".csv")]
+        if not csv_names:
+            raise ValueError("UDiFF ZIP contains no CSV")
+        with archive.open(csv_names[0]) as stream:
+            raw = pd.read_csv(stream)
 
-                response = session.get(url, timeout=30)
+    required = [
+        "TradDt", "TckrSymb", "XpryDt", "FinInstrmTp", "PrvsClsgPric",
+        "OpnPric", "HghPric", "LwPric", "ClsPric", "OpnIntrst",
+        "ChngInOpnIntrst", "TtlTradgVol", "TtlTrfVal",
+    ]
+    missing = [c for c in required if c not in raw.columns]
+    if missing:
+        raise ValueError(f"UDiFF schema missing fields: {missing}")
+    raw = raw[raw["FinInstrmTp"].astype(str).str.strip().eq("STF")].copy()
 
-                if response.status_code != 200:
-                    continue
+    frame = pd.DataFrame({
+        "Trade_Date": raw["TradDt"],
+        "Symbol": raw["TckrSymb"],
+        "Expiry_Date": raw["XpryDt"],
+        "Previous_Close_Price": raw["PrvsClsgPric"],
+        "Open_Price": raw["OpnPric"],
+        "High_Price": raw["HghPric"],
+        "Low_Price": raw["LwPric"],
+        "Close_Price": raw["ClsPric"],
+        "Open_Interest": raw["OpnIntrst"],
+        "Change_In_Open_Interest": raw["ChngInOpnIntrst"],
+        "Volume": raw["TtlTradgVol"],
+        "Turnover": raw["TtlTrfVal"],
+    })
+    return validate_futures_frame(frame, expected_date, "UDiFF ZIP")
 
-                if not response.content.startswith(b"PK"):
-                    continue
 
-                with zipfile.ZipFile(
-                    io.BytesIO(response.content)
-                ) as z:
+def parse_dat(payload, expected_date):
+    """Parse the 26-column, headerless NSE FNO_BC DDMMYYYY DAT layout.
 
-                    csv_files = [
-                        name for name in z.namelist()
-                        if name.lower().endswith(".csv")
-                    ]
+    Verified 1-based fields: instrument=2, symbol=3, expiry=4,
+    previous close=10, open=11, high=12, low=13, close=14,
+    contracts=16, turnover=17, OI=18, change in OI=19, trade date=22.
+    """
+    raw = pd.read_csv(
+        io.BytesIO(payload), header=None, dtype=str,
+        keep_default_na=False, skipinitialspace=False
+    )
+    if raw.shape[1] != 26:
+        raise ValueError(
+            f"F&O DAT schema changed: expected 26 columns, found {raw.shape[1]}"
+        )
+    raw = raw[raw.iloc[:, 1].astype(str).str.strip().eq("FUTSTK")].copy()
+    if raw.empty:
+        raise ValueError("F&O DAT contains no FUTSTK records")
 
-                    if not csv_files:
+    frame = pd.DataFrame({
+        "Trade_Date": raw.iloc[:, 21].str.strip(),
+        "Symbol": raw.iloc[:, 2].str.strip(),
+        "Expiry_Date": raw.iloc[:, 3].str.strip(),
+        "Previous_Close_Price": raw.iloc[:, 9].str.strip(),
+        "Open_Price": raw.iloc[:, 10].str.strip(),
+        "High_Price": raw.iloc[:, 11].str.strip(),
+        "Low_Price": raw.iloc[:, 12].str.strip(),
+        "Close_Price": raw.iloc[:, 13].str.strip(),
+        "Open_Interest": raw.iloc[:, 17].str.strip(),
+        "Change_In_Open_Interest": raw.iloc[:, 18].str.strip(),
+        "Volume": raw.iloc[:, 15].str.strip(),
+        "Turnover": raw.iloc[:, 16].str.strip(),
+    })
+    frame["Trade_Date"] = pd.to_datetime(
+        frame["Trade_Date"], format="%d/%b/%Y", errors="coerce"
+    )
+    frame["Expiry_Date"] = pd.to_datetime(
+        frame["Expiry_Date"], format="%d%m%Y", errors="coerce"
+    )
+    return validate_futures_frame(frame, expected_date, "F&O DAT")
+
+
+def download_bhavcopy():
+    """Search newest dates first and accept either published NSE format."""
+    session = requests.Session()
+    session.headers.update(HEADERS)
+    errors = []
+
+    for days_back in range(0, 11):
+        check_date = TODAY_IST - timedelta(days=days_back)
+        yyyymmdd = check_date.strftime("%Y%m%d")
+        ddmmyyyy = check_date.strftime("%d%m%Y")
+        candidates = [
+            ("UDiFF ZIP", f"BhavCopy_NSE_FO_0_0_0_{yyyymmdd}_F_0000.csv.zip",
+             UDIFF_BASE_URLS, parse_udiff_zip),
+            ("F&O DAT", f"FNO_BC{ddmmyyyy}.DAT", DAT_BASE_URLS, parse_dat),
+        ]
+
+        for source_name, filename, base_urls, parser in candidates:
+            for base_url in base_urls:
+                url = base_url + filename
+                try:
+                    print(f"Checking {source_name}: {url}")
+                    response = session.get(url, timeout=40)
+                    if response.status_code != 200 or len(response.content) < 1000:
+                        continue
+                    if source_name == "UDiFF ZIP" and not response.content.startswith(b"PK"):
                         continue
 
-                    with z.open(csv_files[0]) as csv_file:
-                        df = pd.read_csv(csv_file)
-
-                if df.empty:
-                    continue
-
-                print("Bhavcopy downloaded:", check_date)
-                print("Rows:", len(df))
-
-                return df, check_date
-
-            except Exception as e:
-                print(f"Download attempt failed: {e}")
+                    parsed = parser(response.content, check_date)
+                    print(
+                        f"Accepted {source_name} for {check_date}: "
+                        f"{len(parsed)} FUTSTK contracts / "
+                        f"{parsed['Symbol'].nunique()} symbols"
+                    )
+                    return parsed, check_date, source_name
+                except Exception as exc:
+                    message = f"{source_name} {check_date} via {base_url}: {exc}"
+                    errors.append(message)
+                    print("Rejected candidate:", message)
 
     raise RuntimeError(
-        "No valid NSE F&O Bhavcopy found for today "
-        "or previous 10 calendar days."
+        "No valid NSE F&O UDiFF ZIP or DAT report found for today or "
+        "the previous 10 calendar days. Latest candidate errors:\n"
+        + "\n".join(errors[-8:])
     )
 
 
 # ------------------------------------------------------------
-# SELECT FRONT-MONTH STOCK FUTURES
+# SELECT NEAREST UNEXPIRED STOCK FUTURES
 # ------------------------------------------------------------
 
 def select_front_month_stock_futures(df):
-
-    required_columns = [
-        "TradDt",
-        "TckrSymb",
-        "XpryDt",
-        "FinInstrmTp",
-        "ClsPric",
-        "OpnIntrst",
-        "TtlTradgVol",
+    required = [
+        "Trade_Date", "Symbol", "Expiry_Date", "Close_Price",
+        "Open_Interest", "Volume", "Open_Price", "High_Price", "Low_Price",
     ]
-
-    missing = [c for c in required_columns if c not in df.columns]
-
+    missing = [c for c in required if c not in df.columns]
     if missing:
-        raise RuntimeError(f"Missing Bhavcopy columns: {missing}")
+        raise RuntimeError(f"Normalized F&O report missing fields: {missing}")
 
-    df = df[
-        df["FinInstrmTp"].astype(str).str.strip() == "STF"
-    ].copy()
+    selected = df.copy()
+    selected["Trade_Date"] = pd.to_datetime(selected["Trade_Date"], errors="coerce")
+    selected["Expiry_Date"] = pd.to_datetime(selected["Expiry_Date"], errors="coerce")
+    selected["Symbol"] = selected["Symbol"].astype(str).str.strip()
+    selected = selected.dropna(subset=["Trade_Date", "Expiry_Date", "Symbol"])
+    selected = selected.sort_values(["Symbol", "Expiry_Date"])
+    front = selected.groupby("Symbol", as_index=False).first()
 
-    df["TradDt"] = pd.to_datetime(df["TradDt"], errors="coerce")
-    df["XpryDt"] = pd.to_datetime(df["XpryDt"], errors="coerce")
+    if front["Symbol"].nunique() < MIN_STOCK_SYMBOLS:
+        raise RuntimeError(
+            f"Front-month selection returned only {front['Symbol'].nunique()} symbols"
+        )
 
-    df["ClsPric"] = pd.to_numeric(df["ClsPric"], errors="coerce")
-    df["OpnIntrst"] = pd.to_numeric(df["OpnIntrst"], errors="coerce")
-    df["TtlTradgVol"] = pd.to_numeric(
-        df["TtlTradgVol"], errors="coerce"
+    required_front = [
+        "Open_Price", "High_Price", "Low_Price", "Close_Price",
+        "Open_Interest", "Volume",
+    ]
+    if front[required_front].isna().any().any():
+        raise RuntimeError("Front-month snapshot contains missing required values")
+    bad_ohlc = (
+        (front["Open_Price"] <= 0)
+        | (front["High_Price"] <= 0)
+        | (front["Low_Price"] <= 0)
+        | (front["Close_Price"] <= 0)
+        | (front["High_Price"] < front[["Open_Price", "Close_Price", "Low_Price"]].max(axis=1))
+        | (front["Low_Price"] > front[["Open_Price", "Close_Price", "High_Price"]].min(axis=1))
     )
+    if bad_ohlc.any():
+        bad_symbols = front.loc[bad_ohlc, "Symbol"].astype(str).tolist()
+        raise RuntimeError("Invalid front-month OHLC for: " + ", ".join(bad_symbols[:20]))
 
-    df = df.dropna(
-        subset=[
-            "TradDt", "TckrSymb", "XpryDt",
-            "ClsPric", "OpnIntrst"
-        ]
-    )
-
-    df = df[
-        df["XpryDt"].dt.date >= df["TradDt"].dt.date
-    ].copy()
-
-    df = df.sort_values(["TckrSymb", "XpryDt"])
-
-    front = df.groupby("TckrSymb", as_index=False).first()
-
-    front = front[
-        [
-            "TradDt", "TckrSymb", "XpryDt",
-            "ClsPric", "OpnIntrst", "TtlTradgVol"
-        ]
-    ].copy()
-
-    front = front.rename(
-        columns={
-            "TradDt": "Trade_Date",
-            "TckrSymb": "Symbol",
-            "XpryDt": "Expiry_Date",
-            "ClsPric": "Close_Price",
-            "OpnIntrst": "Open_Interest",
-            "TtlTradgVol": "Volume",
-        }
-    )
-
-    front["Trade_Date"] = pd.to_datetime(
-        front["Trade_Date"]
-    ).dt.strftime("%Y-%m-%d")
-
-    front["Expiry_Date"] = pd.to_datetime(
-        front["Expiry_Date"]
-    ).dt.strftime("%Y-%m-%d")
-
+    for column in ["Trade_Date", "Expiry_Date"]:
+        front[column] = pd.to_datetime(front[column]).dt.strftime("%Y-%m-%d")
     return front
 
 
@@ -310,11 +404,12 @@ def classify_oi(current, previous, current_date):
 # SAVE DAILY HISTORY AND CLASSIFICATION
 # ------------------------------------------------------------
 
-def save_daily_data(front, bhavcopy_date):
+def save_daily_data(front, bhavcopy_date, source_name):
 
     date_string = bhavcopy_date.strftime("%Y-%m-%d")
 
     front["Bhavcopy_Date"] = date_string
+    front["Bhavcopy_Source"] = source_name
     front["Refresh_Time_IST"] = NOW_IST.strftime(
         "%Y-%m-%d %H:%M:%S"
     )
@@ -325,11 +420,9 @@ def save_daily_data(front, bhavcopy_date):
     # Save permanent daily snapshot
     daily_snapshot = HISTORY_DIR / f"snapshot_{date_string}.csv"
 
-    if not daily_snapshot.exists():
-        front.to_csv(daily_snapshot, index=False)
-        print("Saved daily snapshot:", daily_snapshot)
-    else:
-        print("Daily snapshot already exists:", daily_snapshot)
+    # Replace same-date files too, so a corrected NSE republication is used.
+    front.to_csv(daily_snapshot, index=False)
+    print("Saved / refreshed daily snapshot:", daily_snapshot)
 
     # Avoid processing the same date twice
     if CLASSIFICATION_FILE.exists():
@@ -407,7 +500,7 @@ def main():
     print("Current IST:", NOW_IST.strftime("%Y-%m-%d %H:%M:%S"))
     print("=" * 55)
 
-    df, bhavcopy_date = download_bhavcopy()
+    df, bhavcopy_date, source_name = download_bhavcopy()
 
     front = select_front_month_stock_futures(df)
 
@@ -415,9 +508,11 @@ def main():
         raise RuntimeError("No stock futures selected.")
 
     print("\nBhavcopy date:", bhavcopy_date)
+    print("Bhavcopy source:", source_name)
     print("Selected stock futures:", len(front))
+    print("OHLC, OI, change in OI and volume fields validated.")
 
-    save_daily_data(front, bhavcopy_date)
+    save_daily_data(front, bhavcopy_date, source_name)
 
     print("\nSUCCESS")
     print("Latest snapshot:", OUTPUT_FILE)
