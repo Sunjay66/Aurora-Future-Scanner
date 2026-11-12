@@ -34,7 +34,11 @@ UDIFF_BASE_URLS = [
     "https://nsearchives.nseindia.com/content/fo/",
     "https://archives.nseindia.com/content/fo/",
 ]
+# NSE's newer public report distribution uses the /content/fo/ directory.
+# Keep the older archive locations as fallbacks for historical availability.
 DAT_BASE_URLS = [
+    "https://nsearchives.nseindia.com/content/fo/",
+    "https://archives.nseindia.com/content/fo/",
     "https://nsearchives.nseindia.com/archives/nsccl/fao/",
     "https://archives.nseindia.com/archives/nsccl/fao/",
 ]
@@ -187,7 +191,11 @@ def parse_dat(payload, expected_date):
 
 
 def download_bhavcopy():
-    """Search newest dates first and accept either published NSE format."""
+    """
+    Search trading dates newest-first. For each date, try the NSE DAT report
+    first and UDiFF ZIP second. A candidate is accepted only after full schema,
+    exact trade-date, stock coverage and field validation.
+    """
     session = requests.Session()
     session.headers.update(HEADERS)
     errors = []
@@ -196,10 +204,13 @@ def download_bhavcopy():
         check_date = TODAY_IST - timedelta(days=days_back)
         yyyymmdd = check_date.strftime("%Y%m%d")
         ddmmyyyy = check_date.strftime("%d%m%Y")
+
+        # DAT is deliberately attempted first because it is now a published
+        # NSE F&O bhavcopy source and contains all fields required by Aurora.
         candidates = [
+            ("F&O DAT", f"FNO_BC{ddmmyyyy}.DAT", DAT_BASE_URLS, parse_dat),
             ("UDiFF ZIP", f"BhavCopy_NSE_FO_0_0_0_{yyyymmdd}_F_0000.csv.zip",
              UDIFF_BASE_URLS, parse_udiff_zip),
-            ("F&O DAT", f"FNO_BC{ddmmyyyy}.DAT", DAT_BASE_URLS, parse_dat),
         ]
 
         for source_name, filename, base_urls, parser in candidates:
@@ -208,29 +219,48 @@ def download_bhavcopy():
                 try:
                     print(f"Checking {source_name}: {url}")
                     response = session.get(url, timeout=40)
-                    if response.status_code != 200 or len(response.content) < 1000:
+
+                    if response.status_code != 200:
+                        print(
+                            f"Unavailable: {source_name} {check_date} "
+                            f"returned HTTP {response.status_code}"
+                        )
                         continue
+
+                    if len(response.content) < 1000:
+                        message = (
+                            f"{source_name} {check_date}: response too small "
+                            f"({len(response.content)} bytes)"
+                        )
+                        errors.append(message)
+                        print("Rejected candidate:", message)
+                        continue
+
                     if source_name == "UDiFF ZIP" and not response.content.startswith(b"PK"):
+                        message = f"UDiFF ZIP {check_date}: response is not a ZIP archive"
+                        errors.append(message)
+                        print("Rejected candidate:", message)
                         continue
 
                     parsed = parser(response.content, check_date)
                     print(
-                        f"Accepted {source_name} for {check_date}: "
+                        f"ACCEPTED {source_name} for {check_date}: "
                         f"{len(parsed)} FUTSTK contracts / "
                         f"{parsed['Symbol'].nunique()} symbols"
                     )
+                    print(f"Selected source: {source_name}")
                     return parsed, check_date, source_name
+
                 except Exception as exc:
                     message = f"{source_name} {check_date} via {base_url}: {exc}"
                     errors.append(message)
                     print("Rejected candidate:", message)
 
     raise RuntimeError(
-        "No valid NSE F&O UDiFF ZIP or DAT report found for today or "
+        "No valid NSE F&O DAT or UDiFF ZIP report found for today or "
         "the previous 10 calendar days. Latest candidate errors:\n"
-        + "\n".join(errors[-8:])
+        + "\n".join(errors[-16:])
     )
-
 
 # ------------------------------------------------------------
 # SELECT NEAREST UNEXPIRED STOCK FUTURES
