@@ -41,6 +41,9 @@ jobs:
       - name: Download cash-market OHLC history for ADR-14
         run: python scripts/update_cash_market_history.py
 
+      - name: Update NSE delivery percentage history for all scanner dates
+        run: python scripts/update_delivery_history.py
+
       - name: Update mapped sector index history
         run: python scripts/update_sector_index_history.py
 
