@@ -8,13 +8,19 @@
 :root{--navy:#172d4b;--bg:#f3f6fa;--border:#dbe3ed;--green:#008c45;--red:#d62828;--text:#172033}
 *{box-sizing:border-box}body{margin:0;padding:18px;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
 header{background:var(--navy);color:#fff;padding:24px;border-radius:14px;margin-bottom:18px}header h1{margin:0 0 8px}header p{margin:0}
-a{color:inherit}.topline{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:8px 0 14px}
+a{color:inherit}.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 14px}
+#reportDate{display:inline-block;background:#fff;border:1px solid var(--border);border-radius:9px;padding:11px 16px;color:var(--navy);font-size:16px;font-weight:700}
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.toolbar input,.toolbar select,.toolbar button{padding:11px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}
 .toolbar input{flex:1;min-width:220px}.toolbar button{cursor:pointer;background:var(--navy);color:white}.toolbar .secondary{background:#fff;color:var(--navy)}
 .message{padding:12px;border-radius:8px;background:#fff;margin:12px 0}.success{color:var(--green)}.error{color:var(--red)}
 .note{color:#596579;font-size:13px;line-height:1.5}.table-wrap{overflow:auto;background:#fff;border:1px solid var(--border);border-radius:10px}
-table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}th,td{padding:12px;text-align:right;border-bottom:1px solid var(--border)}
-th{background:#e8edf5;position:sticky;top:0;z-index:1;cursor:pointer}th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+table{width:100%;max-width:1220px;table-layout:fixed;border-collapse:collapse;font-size:13px;white-space:nowrap}th,td{padding:12px 14px;text-align:right;border-bottom:1px solid var(--border);overflow:hidden;text-overflow:ellipsis}
+th{background:#e8edf5;position:sticky;top:0;z-index:1;cursor:pointer}
+th:nth-child(1),td:nth-child(1){text-align:left;width:22%}
+th:nth-child(2),td:nth-child(2){width:24%}
+th:nth-child(3),td:nth-child(3){width:26%}
+th:nth-child(4),td:nth-child(4){width:28%}
+th:nth-child(4) button{white-space:normal;line-height:1.25;text-align:right;max-width:100%}
 th button{border:0;background:transparent;color:var(--navy);font-weight:bold;font-size:13px;cursor:pointer;padding:0}
 tbody tr:hover{background:#f4f8fc}.positive{color:var(--green);font-weight:bold}.negative{color:var(--red);font-weight:bold}.muted{color:#7b8798}
 @media(max-width:600px){body{padding:9px}header{padding:18px}}
@@ -22,7 +28,7 @@ tbody tr:hover{background:#f4f8fc}.positive{color:var(--green);font-weight:bold}
 </head>
 <body>
 <header><h1>Aurora F&O Stock Delivery Report</h1><p>All current front-month F&O stocks • Latest delivery participation versus 20 trading-session average</p></header>
-<div class="topline"><a href="index.html">← Back to Aurora Futures & Institutional Dashboard</a><strong id="reportDate">Report date: —</strong></div>
+<div class="topline"><a href="index.html">← Back to Aurora Futures & Institutional Dashboard</a><strong id="reportDate">Latest trading date: —</strong></div>
 <div class="toolbar">
 <input id="search" type="search" placeholder="Search F&O stock symbol…" autocomplete="off">
 <select id="sortDirection" aria-label="Sort direction"><option value="desc">Highest first</option><option value="asc">Lowest first</option></select>
@@ -32,8 +38,8 @@ tbody tr:hover{background:#f4f8fc}.positive{color:var(--green);font-weight:bold}
 <p class="note">Delivery % is NSE deliverable quantity as a percentage of traded quantity. The 20-session average uses the latest 20 valid trading-session observations, including the report date. Change (%) = ((latest delivery % ÷ 20-session average) − 1) × 100. A 20-session average is left blank until 20 valid observations exist. All current F&O stocks remain listed, including stocks with unavailable delivery data.</p>
 <div class="table-wrap">
 <table>
+<colgroup><col style="width:22%"><col style="width:24%"><col style="width:26%"><col style="width:28%"></colgroup>
 <thead><tr>
-<th data-key="Trade_Date"><button>Date of Trade ↕</button></th>
 <th data-key="Symbol"><button>F&O Stock ↕</button></th>
 <th data-key="Delivery_Pct"><button>Delivery % of Traded Volume ↕</button></th>
 <th data-key="Avg_Delivery_Pct_20D"><button>20-Session Average Delivery % ↕</button></th>
@@ -64,7 +70,7 @@ function render(){
  });
  el("body").innerHTML=filtered.map(r=>{
   const change=num(r.Change_vs_20D_Avg_Pct),cls=change===null?"muted":change>0?"positive":change<0?"negative":"";
-  return "<tr><td>"+esc(r.Trade_Date)+"</td><td><strong>"+esc(r.Symbol)+"</strong></td><td>"+fmt(r.Delivery_Pct)+"</td><td>"+fmt(r.Avg_Delivery_Pct_20D)+"</td><td class='"+cls+"'>"+(change===null?"—":(change>0?"+":"")+change.toFixed(2)+"%")+"</td></tr>";
+  return "<tr><td><strong>"+esc(r.Symbol)+"</strong></td><td>"+fmt(r.Delivery_Pct)+"</td><td>"+fmt(r.Avg_Delivery_Pct_20D)+"</td><td class='"+cls+"'>"+(change===null?"—":(change>0?"+":"")+change.toFixed(2)+"%")+"</td></tr>";
  }).join("");
  el("status").textContent="Loaded "+filtered.length+" of "+rows.length+" F&O stocks. Default ranking: highest latest delivery percentage first.";
  el("status").className="message success";
@@ -82,7 +88,7 @@ async function init(){
   const response=await fetch("data/delivery_report.csv?v="+Date.now());if(!response.ok)throw new Error("Delivery report file not found (HTTP "+response.status+"). Run the Aurora workflow once.");
   rows=parseCSV(await response.text());
   if(!rows.length)throw new Error("Delivery report contains no rows.");
-  el("reportDate").textContent="Report date: "+rows[0].Trade_Date;
+  el("reportDate").textContent="Latest trading date: "+rows[0].Trade_Date;
   render();
  }catch(e){el("status").textContent="Delivery report loading error: "+e.message;el("status").className="message error"}
 }
