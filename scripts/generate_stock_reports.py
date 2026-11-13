@@ -100,6 +100,64 @@ def load_delivery():
 
 
 
+def build_delivery_universe_report(futures, delivery):
+    """
+    One row per current front-month F&O stock.
+    The 20-session mean includes the latest trade date and requires
+    20 valid NSE delivery observations. Missing values remain blank.
+    """
+    latest_date = futures["Trade_Date"].max()
+    latest = futures[futures["Trade_Date"].eq(latest_date)].copy()
+    symbols = sorted(latest["Symbol"].dropna().astype(str).str.strip().unique())
+
+    history = delivery.copy()
+    if not history.empty:
+        history["Trade_Date"] = pd.to_datetime(history["Trade_Date"], errors="coerce")
+        history["Symbol"] = history["Symbol"].astype(str).str.strip()
+        history["Delivery_Pct"] = pd.to_numeric(history["Delivery_Pct"], errors="coerce")
+        history = history.dropna(subset=["Trade_Date", "Symbol"])
+        history = history[history["Trade_Date"].le(latest_date)]
+        history = history.drop_duplicates(["Trade_Date", "Symbol"], keep="last")
+
+    output = []
+    for symbol in symbols:
+        rows = history[history["Symbol"].eq(symbol)].sort_values("Trade_Date", ascending=False)
+        recent = rows.head(20)
+        valid = recent["Delivery_Pct"].dropna().head(20)
+        latest_row = rows[rows["Trade_Date"].eq(latest_date)]
+        latest_pct = latest_row["Delivery_Pct"].iloc[-1] if not latest_row.empty else pd.NA
+        avg_pct = valid.mean() if len(valid) == 20 else pd.NA
+        change_pct = (
+            (float(latest_pct) / float(avg_pct) - 1) * 100
+            if pd.notna(latest_pct) and pd.notna(avg_pct) and float(avg_pct) != 0
+            else pd.NA
+        )
+        output.append({
+            "Trade_Date": latest_date.strftime("%Y-%m-%d"),
+            "Symbol": symbol,
+            "Delivery_Pct": latest_pct,
+            "Avg_Delivery_Pct_20D": avg_pct,
+            "Change_vs_20D_Avg_Pct": change_pct,
+            "Valid_Delivery_Sessions_20D": len(valid),
+        })
+
+    result = pd.DataFrame(output)
+    for col in ["Delivery_Pct", "Avg_Delivery_Pct_20D", "Change_vs_20D_Avg_Pct"]:
+        result[col] = pd.to_numeric(result[col], errors="coerce").round(2)
+    result = result.sort_values(
+        ["Delivery_Pct", "Symbol"],
+        ascending=[False, True],
+        na_position="last"
+    )
+    target = DATA / "delivery_report.csv"
+    result.to_csv(target, index=False)
+    print(
+        f"Delivery stock report: {len(result)} F&O stocks for "
+        f"{latest_date:%Y-%m-%d}; 20-session averages available for "
+        f"{result['Avg_Delivery_Pct_20D'].notna().sum()} stocks."
+    )
+
+
 def load_sector_data():
     mapping_path = DATA / "stock_sector_proxy_mapping_clean.csv"
     history_path = DATA / "sector_index_history_clean.csv"
@@ -230,6 +288,8 @@ def build_report():
 
     current = report[report["Report_Month"] == current_month].copy()
     current.to_csv(CURRENT_DIR / "current_cycle.csv", index=False)
+    # Separate current F&O-universe delivery ranking (latest date + 20-session mean).
+    build_delivery_universe_report(futures, delivery)
 
     archive_months = sorted(m for m in report["Report_Month"].dropna().unique() if m < current_month)
     for month in archive_months:
