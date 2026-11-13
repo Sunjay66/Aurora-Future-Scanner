@@ -122,8 +122,9 @@ def build_delivery_universe_report(futures, delivery):
     output = []
     for symbol in symbols:
         rows = history[history["Symbol"].eq(symbol)].sort_values("Trade_Date", ascending=False)
-        recent = rows.head(20)
-        valid = recent["Delivery_Pct"].dropna().head(20)
+        # Count the latest 20 valid delivery observations, skipping
+        # missing symbol/session rows rather than treating them as zero.
+        valid = rows.loc[rows["Delivery_Pct"].notna(), "Delivery_Pct"].head(20)
         latest_row = rows[rows["Trade_Date"].eq(latest_date)]
         latest_pct = latest_row["Delivery_Pct"].iloc[-1] if not latest_row.empty else pd.NA
         avg_pct = valid.mean() if len(valid) == 20 else pd.NA
