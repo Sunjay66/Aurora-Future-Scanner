@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurora F&O Stock Delivery Report</title>
+<style>
+:root{--navy:#172d4b;--bg:#f3f6fa;--border:#dbe3ed;--green:#008c45;--red:#d62828;--text:#172033}
+*{box-sizing:border-box}body{margin:0;padding:18px;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+header{background:var(--navy);color:#fff;padding:24px;border-radius:14px;margin-bottom:18px}header h1{margin:0 0 8px}header p{margin:0}
+a{color:inherit}.topline{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:8px 0 14px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.toolbar input,.toolbar select,.toolbar button{padding:11px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}
+.toolbar input{flex:1;min-width:220px}.toolbar button{cursor:pointer;background:var(--navy);color:white}.toolbar .secondary{background:#fff;color:var(--navy)}
+.message{padding:12px;border-radius:8px;background:#fff;margin:12px 0}.success{color:var(--green)}.error{color:var(--red)}
+.note{color:#596579;font-size:13px;line-height:1.5}.table-wrap{overflow:auto;background:#fff;border:1px solid var(--border);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}th,td{padding:12px;text-align:right;border-bottom:1px solid var(--border)}
+th{background:#e8edf5;position:sticky;top:0;z-index:1;cursor:pointer}th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+th button{border:0;background:transparent;color:var(--navy);font-weight:bold;font-size:13px;cursor:pointer;padding:0}
+tbody tr:hover{background:#f4f8fc}.positive{color:var(--green);font-weight:bold}.negative{color:var(--red);font-weight:bold}.muted{color:#7b8798}
+@media(max-width:600px){body{padding:9px}header{padding:18px}}
+</style>
+</head>
+<body>
+<header><h1>Aurora F&O Stock Delivery Report</h1><p>All current front-month F&O stocks • Latest delivery participation versus 20 trading-session average</p></header>
+<div class="topline"><a href="index.html">← Back to Aurora Futures & Institutional Dashboard</a><strong id="reportDate">Report date: —</strong></div>
+<div class="toolbar">
+<input id="search" type="search" placeholder="Search F&O stock symbol…" autocomplete="off">
+<select id="sortDirection" aria-label="Sort direction"><option value="desc">Highest first</option><option value="asc">Lowest first</option></select>
+<button id="download">Download CSV</button>
+</div>
+<div id="status" class="message">Loading delivery report…</div>
+<p class="note">Delivery % is NSE deliverable quantity as a percentage of traded quantity. The 20-session average uses the latest 20 valid trading-session observations, including the report date. Change (%) = ((latest delivery % ÷ 20-session average) − 1) × 100. A 20-session average is left blank until 20 valid observations exist. All current F&O stocks remain listed, including stocks with unavailable delivery data.</p>
+<div class="table-wrap">
+<table>
+<thead><tr>
+<th data-key="Trade_Date"><button>Date of Trade ↕</button></th>
+<th data-key="Symbol"><button>F&O Stock ↕</button></th>
+<th data-key="Delivery_Pct"><button>Delivery % of Traded Volume ↕</button></th>
+<th data-key="Avg_Delivery_Pct_20D"><button>20-Session Average Delivery % ↕</button></th>
+<th data-key="Change_vs_20D_Avg_Pct"><button>Increase / Decrease vs 20-Session Average (%) ↕</button></th>
+</tr></thead><tbody id="body"></tbody>
+</table></div>
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+let rows=[],sortKey="Delivery_Pct",sortDir="desc";
+function parseCSV(text){
+ const lines=text.replace(/^\uFEFF/,"").trim().split(/\r?\n/);if(!lines.length||!lines[0])return [];
+ const parseLine=line=>{const out=[];let cur="",quoted=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'&&line[i+1]==='"'&&quoted){cur+='"';i++}else if(ch==='"')quoted=!quoted;else if(ch===","&&!quoted){out.push(cur);cur=""}else cur+=ch}out.push(cur);return out};
+ const heads=parseLine(lines[0]);return lines.slice(1).filter(Boolean).map(line=>{const v=parseLine(line),o={};heads.forEach((h,i)=>o[h]=v[i]??"");return o});
+}
+function num(v){if(v===null||v===undefined||v==="")return null;const n=Number(v);return Number.isFinite(n)?n:null}
+function fmt(v){const n=num(v);return n===null?"—":n.toFixed(2)+"%"}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function render(){
+ const q=el("search").value.trim().toUpperCase(),dir=el("sortDirection").value==="asc"?1:-1;
+ const filtered=rows.filter(r=>!q||String(r.Symbol).toUpperCase().includes(q));
+ filtered.sort((a,b)=>{
+  const av=a[sortKey],bv=b[sortKey],an=num(av),bn=num(bv);
+  if(sortKey==="Symbol"||sortKey==="Trade_Date")return String(av).localeCompare(String(bv))*dir;
+  if(an===null&&bn===null)return String(a.Symbol).localeCompare(String(b.Symbol));
+  if(an===null)return 1;if(bn===null)return -1;
+  return (an-bn)*dir;
+ });
+ el("body").innerHTML=filtered.map(r=>{
+  const change=num(r.Change_vs_20D_Avg_Pct),cls=change===null?"muted":change>0?"positive":change<0?"negative":"";
+  return "<tr><td>"+esc(r.Trade_Date)+"</td><td><strong>"+esc(r.Symbol)+"</strong></td><td>"+fmt(r.Delivery_Pct)+"</td><td>"+fmt(r.Avg_Delivery_Pct_20D)+"</td><td class='"+cls+"'>"+(change===null?"—":(change>0?"+":"")+change.toFixed(2)+"%")+"</td></tr>";
+ }).join("");
+ el("status").textContent="Loaded "+filtered.length+" of "+rows.length+" F&O stocks. Default ranking: highest latest delivery percentage first.";
+ el("status").className="message success";
+}
+el("search").addEventListener("input",render);
+el("sortDirection").addEventListener("change",render);
+document.querySelectorAll("th[data-key]").forEach(th=>th.addEventListener("click",()=>{const key=th.dataset.key;if(sortKey===key)sortDir=sortDir==="desc"?"asc":"desc";else{sortKey=key;sortDir=key==="Symbol"||key==="Trade_Date"?"asc":"desc"}el("sortDirection").value=sortDir;render()}));
+el("download").addEventListener("click",()=>{
+ const headers=["Trade_Date","Symbol","Delivery_Pct","Avg_Delivery_Pct_20D","Change_vs_20D_Avg_Pct"];
+ const lines=[headers.join(","),...rows.map(r=>headers.map(h=>'"'+String(r[h]??"").replace(/"/g,'""')+'"').join(","))];
+ const url=URL.createObjectURL(new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download="Aurora_FO_Delivery_Report_"+(rows[0]?.Trade_Date||"latest")+".csv";a.click();URL.revokeObjectURL(url);
+});
+async function init(){
+ try{
+  const response=await fetch("data/delivery_report.csv?v="+Date.now());if(!response.ok)throw new Error("Delivery report file not found (HTTP "+response.status+"). Run the Aurora workflow once.");
+  rows=parseCSV(await response.text());
+  if(!rows.length)throw new Error("Delivery report contains no rows.");
+  el("reportDate").textContent="Report date: "+rows[0].Trade_Date;
+  render();
+ }catch(e){el("status").textContent="Delivery report loading error: "+e.message;el("status").className="message error"}
+}
+init();
+</script>
+</body></html>
