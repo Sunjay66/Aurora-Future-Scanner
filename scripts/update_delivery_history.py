@@ -6,7 +6,7 @@
 # ============================================================
 
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import time
 
@@ -155,7 +155,7 @@ def main():
         candidate_text = candidate.strftime("%Y-%m-%d")
         if candidate.weekday() < 5 and candidate_text not in existing_valid_dates:
             targets.add(candidate_text)
-        candidate = candidate - pd.Timedelta(days=1)
+        candidate = candidate - timedelta(days=1)
         # Count only confirmed dates after each successful download below.
         if len(targets) > 80:
             break
