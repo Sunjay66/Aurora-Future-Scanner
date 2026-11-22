@@ -1,79 +1,62 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Aurora Cash Swing Scanner</title>
 <style>
-:root{--navy:#172d4b;--bg:#f3f6fa;--line:#dbe3ed;--muted:#607089;--green:#087b45;--red:#b42318}
+:root{--navy:#172d4b;--bg:#f3f6fa;--line:#dbe3ed;--muted:#607089;--green:#087b45;--red:#b42318;--amber:#946200}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#172033;font:14px Arial,sans-serif;padding:18px}
-header{background:var(--navy);color:white;padding:24px;border-radius:12px;margin-bottom:18px}
-h1{margin:0 0 7px;font-size:27px}header p{margin:0;color:#d8e2ef}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:14px 0}
-.card,.panel{background:#fff;border:1px solid var(--line);border-radius:10px;padding:15px}
-.k{color:var(--muted);font-size:12px}.v{font-size:23px;font-weight:700;margin-top:7px}
-.panel{margin:14px 0}.panel h2{font-size:18px;margin:0 0 12px}
+header{background:var(--navy);color:#fff;padding:24px;border-radius:12px;margin-bottom:18px}h1{margin:0 0 7px;font-size:27px}header p{margin:0;color:#d8e2ef}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin:14px 0}.card,.panel{background:#fff;border:1px solid var(--line);border-radius:10px;padding:15px}
+.k{color:var(--muted);font-size:12px}.v{font-size:23px;font-weight:700;margin-top:7px}.panel{margin:14px 0}.panel h2{font-size:18px;margin:0 0 12px}
 .note{background:#fff8e7;border:1px solid #f0d99e;border-radius:8px;padding:11px;margin:12px 0;color:#76530a}
-.controls{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}
-input,select,button{padding:10px;border:1px solid #cbd5e1;border-radius:7px;background:white}
-button{background:var(--navy);color:white;cursor:pointer}
-.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:12px}
-th,td{text-align:left;padding:9px;border-bottom:1px solid var(--line)}th{background:#edf2f8;position:sticky;top:0}
-.empty{padding:22px;text-align:center;color:var(--muted)}
-footer{color:var(--muted);font-size:12px;padding:14px 2px}
-@media(max-width:600px){body{padding:9px}header{padding:18px}h1{font-size:23px}}
-</style></head>
-<body>
-<header><h1>Aurora Cash Swing Scanner</h1><p>Nifty 200 · MACD confirmation · ATR / HV stops · Risk-based position sizing</p></header>
+.controls{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}input,select,button{padding:10px;border:1px solid #cbd5e1;border-radius:7px;background:white}button{cursor:pointer}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.tabs button{background:#e8eef6;color:var(--navy);font-weight:bold}.tabs button.active{background:var(--navy);color:#fff}
+.tab{display:none}.tab.active{display:block}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:12px}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--line)}th{background:#edf2f8;position:sticky;top:0}.empty{padding:22px;text-align:center;color:var(--muted)}
+.status-open{color:var(--amber);font-weight:bold}.status-exit{color:var(--red);font-weight:bold}.status-closed{color:var(--green);font-weight:bold}
+footer{color:var(--muted);font-size:12px;padding:14px 2px}@media(max-width:600px){body{padding:9px}header{padding:18px}h1{font-size:23px}}
+</style></head><body>
+<header><h1>Aurora Cash Swing Scanner</h1><p>Nifty 200 · MACD entry confirmation · ATR / HV risk · Trade lifecycle monitoring</p></header>
 <div class="cards">
- <div class="card"><div class="k">Market date</div><div class="v" id="marketDate">—</div></div>
- <div class="card"><div class="k">Stocks scanned</div><div class="v" id="scanned">—</div></div>
- <div class="card"><div class="k">Qualifying stocks</div><div class="v" id="qualified">—</div></div>
- <div class="card"><div class="k">Trade plans</div><div class="v" id="plans">—</div></div>
- <div class="card"><div class="k">Last refresh (IST)</div><div class="v" style="font-size:15px" id="refreshed">—</div></div>
+<div class="card"><div class="k">Market date</div><div class="v" id="marketDate">—</div></div>
+<div class="card"><div class="k">Stocks scanned</div><div class="v" id="scanned">—</div></div>
+<div class="card"><div class="k">New qualifying stocks</div><div class="v" id="qualified">—</div></div>
+<div class="card"><div class="k">Open position models</div><div class="v" id="openCount">—</div></div>
+<div class="card"><div class="k">MACD exit alerts</div><div class="v" id="macdCount">—</div></div>
+<div class="card"><div class="k">Hard-stop exits</div><div class="v" id="stopCount">—</div></div>
+<div class="card"><div class="k">Last refresh IST</div><div class="v" style="font-size:14px" id="refreshed">—</div></div>
 </div>
-<div class="note"><b>Execution status:</b> Evening recommendations use the latest completed close as a reference. Entry, stop, targets, quantity and capital must be recalculated using the next session's actual opening price before placing an order.</div>
-<section class="panel">
- <h2>Qualifying cash-market opportunities</h2>
- <div class="controls">
-  <input id="search" placeholder="Search symbol or company">
-  <select id="model"><option value="all">Both stop models</option><option>1.25 ATR14</option><option>2 x HV60 daily rupee move</option></select>
- </div>
- <div class="tablewrap"><table><thead><tr>
- <th>Symbol</th><th>Stop model</th><th>Reference close ₹</th><th>ATR14 ₹</th><th>HV60 daily ₹</th><th>Provisional stop ₹</th><th>2R ₹</th><th>3R ₹</th><th>Qty*</th><th>Capital ₹*</th><th>Hist. trades</th><th>Stop hit %</th><th>2R achieved %</th><th>Avg R</th>
- </tr></thead><tbody id="rows"><tr><td colspan="14" class="empty">Loading scanner results…</td></tr></tbody></table></div>
- <p class="k">*Quantity and capital are provisional, based on the reference close. Historical columns refer to the 1.25 ATR / 2R sample only. Unavailable stock-specific statistics are not inferred.</p>
-</section>
-<section class="panel"><h2>Scanner methodology</h2>
- <p>Entry: MACD 12,26,9 bullish crossover below zero, followed by three consecutive positive histogram sessions. Confirmation occurs at the third positive-histogram close; planned entry is next session's open.</p>
- <p>Stop alternatives: 1.25 × ATR14 or 2 × HV60 daily rupee movement. Targets: 2R and 3R. Exit: hard stop, bearish MACD crossover at next session open, or 20 trading sessions.</p>
-</section>
+<div class="note"><b>Important:</b> Each stop model is a separate hypothetical alternative. Do not treat both model rows as two actual positions. Evening entry plans are provisional until the next session open. Exit signals confirmed at a daily close are executed at the following session open. If a hard stop or target is reached intraday, the OHLC engine uses a conservative stop-first assumption when both are touched in one candle.</div>
+<div class="tabs">
+<button class="active" data-tab="open">Open positions</button><button data-tab="macd">MACD exit alerts</button><button data-tab="stops">Hard-stop exits</button><button data-tab="new">New entry signals</button><button data-tab="closed">Recently closed</button>
+</div>
+<section class="panel tab active" id="tab-open"><h2>Open positions — latest market close</h2><div class="tablewrap"><table><thead><tr><th>Stock</th><th>Stop model</th><th>Entry date</th><th>Entry ₹</th><th>Latest close ₹</th><th>Stop ₹</th><th>2R ₹</th><th>3R ₹</th><th>Qty*</th><th>Unrealised %</th><th>Sessions held</th><th>2R touched</th><th>Status</th></tr></thead><tbody id="openRows"></tbody></table></div></section>
+<section class="panel tab" id="tab-macd"><h2>Bearish MACD exit alerts</h2><div class="tablewrap"><table><thead><tr><th>Stock</th><th>Stop model</th><th>Entry date</th><th>Entry ₹</th><th>MACD exit signal date</th><th>Exit execution date</th><th>Exit open ₹</th><th>Return %</th><th>Status</th></tr></thead><tbody id="macdRows"></tbody></table></div></section>
+<section class="panel tab" id="tab-stops"><h2>Hard-stop exits</h2><div class="tablewrap"><table><thead><tr><th>Stock</th><th>Stop model</th><th>Entry date</th><th>Entry ₹</th><th>Stop ₹</th><th>Exit date</th><th>Exit price ₹</th><th>Return %</th><th>Status</th></tr></thead><tbody id="stopRows"></tbody></table></div></section>
+<section class="panel tab" id="tab-new"><h2>New qualifying entry signals</h2><div class="tablewrap"><table><thead><tr><th>Stock</th><th>Signal date</th><th>Stop model</th><th>Reference close ₹</th><th>ATR14 ₹</th><th>HV60 daily ₹</th><th>Provisional stop ₹</th><th>2R ₹</th><th>3R ₹</th><th>Qty*</th><th>Capital ₹*</th><th>Historical trades</th><th>Stop hit %</th><th>2R achieved %</th><th>Avg R</th></tr></thead><tbody id="newRows"></tbody></table></div></section>
+<section class="panel tab" id="tab-closed"><h2>Recently closed trades</h2><div class="tablewrap"><table><thead><tr><th>Stock</th><th>Stop model</th><th>Entry date</th><th>Entry ₹</th><th>Exit type</th><th>Exit date</th><th>Exit ₹</th><th>Return %</th><th>Realised R</th></tr></thead><tbody id="closedRows"></tbody></table></div></section>
+<section class="panel"><h2>Position sizing settings</h2><div class="k" id="capitalSettings">—</div><p class="k">*Quantity and capital are calculated separately for each stop model, based on the configured risk budget and per-stock capital cap. Confirm next-session opening prices and recalculate before placing an order.</p></section>
 <footer>For research and decision support. Historical results are not a guarantee of future outcomes. Market data availability and accuracy depend on the data provider.</footer>
 <script>
-let payload=null;
-const fmt=(x)=>x==null||x==="Not established"?"—":(typeof x==="number"?x.toLocaleString("en-IN",{maximumFractionDigits:2}):x);
+let data=null;const f=x=>x==null?"—":typeof x==="number"?x.toLocaleString("en-IN",{maximumFractionDigits:2}):x;
+const empty=(id,n,msg)=>document.getElementById(id).innerHTML='<tr><td colspan="'+n+'" class="empty">'+msg+'</td></tr>';
+function table(id,rows,cols,emptyMsg){if(!rows||!rows.length){empty(id,cols,emptyMsg);return;}document.getElementById(id).innerHTML=rows.map(r=>'<tr>'+r.map(x=>'<td>'+f(x)+'</td>').join('')+'</tr>').join('');}
 function render(){
- const body=document.getElementById("rows");
- if(!payload)return;
- const q=document.getElementById("search").value.toLowerCase();
- const m=document.getElementById("model").value;
- const list=(payload.recommendations||[]).filter(r=>(m==="all"||r.stop_model===m)&&((r.symbol||"").toLowerCase().includes(q)||(r.company||"").toLowerCase().includes(q)));
- if(!list.length){body.innerHTML='<tr><td colspan="14" class="empty">No qualifying stocks on the latest completed market session.</td></tr>';return;}
- body.innerHTML=list.map(r=>'<tr><td><b>'+r.symbol+'</b></td><td>'+r.stop_model+'</td><td>'+fmt(r.reference_close)+'</td><td>'+fmt(r.atr14)+'</td><td>'+fmt(r.hv60_daily_rupee_move)+'</td><td>'+fmt(r.stop_loss_provisional)+'</td><td>'+fmt(r.target_2r_provisional)+'</td><td>'+fmt(r.target_3r_provisional)+'</td><td>'+fmt(r.quantity_provisional)+'</td><td>'+fmt(r.capital_required_provisional)+'</td><td>'+fmt(r.historical_sample_trades_atr_2r)+'</td><td>'+fmt(r.historical_atr_stop_hit_pct)+'</td><td>'+fmt(r.historical_atr_2r_achieved_pct)+'</td><td>'+fmt(r.historical_atr_average_realised_r)+'</td></tr>').join("");
+const p=data, s=p.lifecycle_summary||{};
+document.getElementById("marketDate").textContent=p.market_date||"—";
+document.getElementById("scanned").textContent=f(p.stocks_scanned);
+document.getElementById("qualified").textContent=f(p.qualifying_stock_count);
+document.getElementById("openCount").textContent=f(s.open_position_models);
+document.getElementById("macdCount").textContent=f(s.macd_exit_models);
+document.getElementById("stopCount").textContent=f(s.hard_stop_exit_models);
+document.getElementById("refreshed").textContent=p.generated_at_ist?new Date(p.generated_at_ist).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"}):"—";
+const open=p.open_positions||[], macd=p.macd_exit_alerts||[], stops=p.hard_stop_alerts||[], fresh=p.recommendations||[], closed=p.recent_closed_trades||[];
+table("openRows",open.map(x=>[x.symbol,x.stop_model,x.entry_date,x.entry_price,x.latest_close,x.stop_loss,x.target_2r,x.target_3r,x.quantity,x.unrealised_return_pct,x.sessions_held,x.target_2r_touched?"Yes":"No",x.exit_type]),13,"No open positions identified.");
+table("macdRows",macd.map(x=>[x.symbol,x.stop_model,x.entry_date,x.entry_price,x.exit_signal_date,x.exit_date,x.exit_price,x.realised_return_pct,x.exit_type]),9,"No MACD exit alerts in the loaded history.");
+table("stopRows",stops.map(x=>[x.symbol,x.stop_model,x.entry_date,x.entry_price,x.stop_loss,x.exit_date,x.exit_price,x.realised_return_pct,x.exit_type]),9,"No hard-stop exits in the loaded history.");
+table("newRows",fresh.map(x=>[x.symbol,x.signal_date,x.stop_model,x.reference_close,x.atr14,x.hv60_daily_rupee_move,x.stop_loss_provisional,x.target_2r_provisional,x.target_3r_provisional,x.quantity_provisional,x.capital_required_provisional,x.historical_sample_trades_atr_2r,x.historical_atr_stop_hit_pct,x.historical_atr_2r_achieved_pct,x.historical_atr_average_realised_r]),15,"No new entry signals on the latest completed market date.");
+table("closedRows",closed.map(x=>[x.symbol,x.stop_model,x.entry_date,x.entry_price,x.exit_type,x.exit_date,x.exit_price,x.realised_return_pct,x.realised_r]),9,"No recently closed trades in the last 30 calendar days.");
+const c=p.capital_settings||{};document.getElementById("capitalSettings").textContent="Portfolio capital: ₹"+f(c.portfolio_capital)+" · Risk per trade: "+f(c.risk_per_trade_pct)+"% · Maximum stock allocation: "+f(c.max_stock_allocation_pct)+"%";
 }
-async function load(){
- try{
-  const res=await fetch("data/latest.json?ts="+Date.now());
-  if(!res.ok)throw new Error("Results file not published yet.");
-  payload=await res.json();
-  document.getElementById("marketDate").textContent=payload.market_date||"—";
-  document.getElementById("scanned").textContent=fmt(payload.stocks_scanned);
-  document.getElementById("qualified").textContent=fmt(payload.qualifying_stock_count);
-  document.getElementById("plans").textContent=fmt(payload.trade_plan_count);
-  document.getElementById("refreshed").textContent=payload.generated_at_ist?new Date(payload.generated_at_ist).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"}):"—";
-  render();
- }catch(e){document.getElementById("rows").innerHTML='<tr><td colspan="14" class="empty">'+e.message+'</td></tr>';}
-}
-document.getElementById("search").addEventListener("input",render);
-document.getElementById("model").addEventListener("change",render);
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById("tab-"+b.dataset.tab).classList.add("active");}));
+async function load(){try{const r=await fetch("data/latest.json?ts="+Date.now());if(!r.ok)throw new Error("Scanner results have not yet been published.");data=await r.json();render();}catch(e){["openRows","macdRows","stopRows","newRows","closedRows"].forEach(id=>empty(id,15,e.message));}}
 load();
 </script></body></html>
