@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aurora Cash Swing Scanner</title>
+<style>
+:root{--navy:#172d4b;--bg:#f3f6fa;--line:#dbe3ed;--muted:#607089;--green:#087b45;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#172033;font:14px Arial,sans-serif;padding:18px}
+header{background:var(--navy);color:white;padding:24px;border-radius:12px;margin-bottom:18px}
+h1{margin:0 0 7px;font-size:27px}header p{margin:0;color:#d8e2ef}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:14px 0}
+.card,.panel{background:#fff;border:1px solid var(--line);border-radius:10px;padding:15px}
+.k{color:var(--muted);font-size:12px}.v{font-size:23px;font-weight:700;margin-top:7px}
+.panel{margin:14px 0}.panel h2{font-size:18px;margin:0 0 12px}
+.note{background:#fff8e7;border:1px solid #f0d99e;border-radius:8px;padding:11px;margin:12px 0;color:#76530a}
+.controls{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+input,select,button{padding:10px;border:1px solid #cbd5e1;border-radius:7px;background:white}
+button{background:var(--navy);color:white;cursor:pointer}
+.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:12px}
+th,td{text-align:left;padding:9px;border-bottom:1px solid var(--line)}th{background:#edf2f8;position:sticky;top:0}
+.empty{padding:22px;text-align:center;color:var(--muted)}
+footer{color:var(--muted);font-size:12px;padding:14px 2px}
+@media(max-width:600px){body{padding:9px}header{padding:18px}h1{font-size:23px}}
+</style></head>
+<body>
+<header><h1>Aurora Cash Swing Scanner</h1><p>Nifty 200 · MACD confirmation · ATR / HV stops · Risk-based position sizing</p></header>
+<div class="cards">
+ <div class="card"><div class="k">Market date</div><div class="v" id="marketDate">—</div></div>
+ <div class="card"><div class="k">Stocks scanned</div><div class="v" id="scanned">—</div></div>
+ <div class="card"><div class="k">Qualifying stocks</div><div class="v" id="qualified">—</div></div>
+ <div class="card"><div class="k">Trade plans</div><div class="v" id="plans">—</div></div>
+ <div class="card"><div class="k">Last refresh (IST)</div><div class="v" style="font-size:15px" id="refreshed">—</div></div>
+</div>
+<div class="note"><b>Execution status:</b> Evening recommendations use the latest completed close as a reference. Entry, stop, targets, quantity and capital must be recalculated using the next session's actual opening price before placing an order.</div>
+<section class="panel">
+ <h2>Qualifying cash-market opportunities</h2>
+ <div class="controls">
+  <input id="search" placeholder="Search symbol or company">
+  <select id="model"><option value="all">Both stop models</option><option>1.25 ATR14</option><option>2 x HV60 daily rupee move</option></select>
+ </div>
+ <div class="tablewrap"><table><thead><tr>
+ <th>Symbol</th><th>Stop model</th><th>Reference close ₹</th><th>ATR14 ₹</th><th>HV60 daily ₹</th><th>Provisional stop ₹</th><th>2R ₹</th><th>3R ₹</th><th>Qty*</th><th>Capital ₹*</th><th>Hist. trades</th><th>Stop hit %</th><th>2R achieved %</th><th>Avg R</th>
+ </tr></thead><tbody id="rows"><tr><td colspan="14" class="empty">Loading scanner results…</td></tr></tbody></table></div>
+ <p class="k">*Quantity and capital are provisional, based on the reference close. Historical columns refer to the 1.25 ATR / 2R sample only. Unavailable stock-specific statistics are not inferred.</p>
+</section>
+<section class="panel"><h2>Scanner methodology</h2>
+ <p>Entry: MACD 12,26,9 bullish crossover below zero, followed by three consecutive positive histogram sessions. Confirmation occurs at the third positive-histogram close; planned entry is next session's open.</p>
+ <p>Stop alternatives: 1.25 × ATR14 or 2 × HV60 daily rupee movement. Targets: 2R and 3R. Exit: hard stop, bearish MACD crossover at next session open, or 20 trading sessions.</p>
+</section>
+<footer>For research and decision support. Historical results are not a guarantee of future outcomes. Market data availability and accuracy depend on the data provider.</footer>
+<script>
+let payload=null;
+const fmt=(x)=>x==null||x==="Not established"?"—":(typeof x==="number"?x.toLocaleString("en-IN",{maximumFractionDigits:2}):x);
+function render(){
+ const body=document.getElementById("rows");
+ if(!payload)return;
+ const q=document.getElementById("search").value.toLowerCase();
+ const m=document.getElementById("model").value;
+ const list=(payload.recommendations||[]).filter(r=>(m==="all"||r.stop_model===m)&&((r.symbol||"").toLowerCase().includes(q)||(r.company||"").toLowerCase().includes(q)));
+ if(!list.length){body.innerHTML='<tr><td colspan="14" class="empty">No qualifying stocks on the latest completed market session.</td></tr>';return;}
+ body.innerHTML=list.map(r=>'<tr><td><b>'+r.symbol+'</b></td><td>'+r.stop_model+'</td><td>'+fmt(r.reference_close)+'</td><td>'+fmt(r.atr14)+'</td><td>'+fmt(r.hv60_daily_rupee_move)+'</td><td>'+fmt(r.stop_loss_provisional)+'</td><td>'+fmt(r.target_2r_provisional)+'</td><td>'+fmt(r.target_3r_provisional)+'</td><td>'+fmt(r.quantity_provisional)+'</td><td>'+fmt(r.capital_required_provisional)+'</td><td>'+fmt(r.historical_sample_trades_atr_2r)+'</td><td>'+fmt(r.historical_atr_stop_hit_pct)+'</td><td>'+fmt(r.historical_atr_2r_achieved_pct)+'</td><td>'+fmt(r.historical_atr_average_realised_r)+'</td></tr>').join("");
+}
+async function load(){
+ try{
+  const res=await fetch("data/latest.json?ts="+Date.now());
+  if(!res.ok)throw new Error("Results file not published yet.");
+  payload=await res.json();
+  document.getElementById("marketDate").textContent=payload.market_date||"—";
+  document.getElementById("scanned").textContent=fmt(payload.stocks_scanned);
+  document.getElementById("qualified").textContent=fmt(payload.qualifying_stock_count);
+  document.getElementById("plans").textContent=fmt(payload.trade_plan_count);
+  document.getElementById("refreshed").textContent=payload.generated_at_ist?new Date(payload.generated_at_ist).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"}):"—";
+  render();
+ }catch(e){document.getElementById("rows").innerHTML='<tr><td colspan="14" class="empty">'+e.message+'</td></tr>';}
+}
+document.getElementById("search").addEventListener("input",render);
+document.getElementById("model").addEventListener("change",render);
+load();
+</script></body></html>
