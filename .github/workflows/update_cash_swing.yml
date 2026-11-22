@@ -1,0 +1,53 @@
+name: Aurora Cash Swing Scanner
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 7:20 PM IST, Monday to Friday (13:50 UTC)
+    - cron: "50 13 * * 1-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aurora-cash-swing
+  cancel-in-progress: false
+
+jobs:
+  scan-cash-market:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r cash_swing/requirements.txt
+
+      - name: Run Nifty 200 cash swing scan
+        env:
+          CASH_PORTFOLIO_CAPITAL: ${{ vars.CASH_PORTFOLIO_CAPITAL || '1000000' }}
+          CASH_RISK_PER_TRADE_PCT: ${{ vars.CASH_RISK_PER_TRADE_PCT || '1.0' }}
+          CASH_MAX_STOCK_ALLOCATION_PCT: ${{ vars.CASH_MAX_STOCK_ALLOCATION_PCT || '20.0' }}
+        run: python cash_swing/scanner.py
+
+      - name: Commit cash swing results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cash_swing/data cash_swing/reports
+          if git diff --cached --quiet; then
+            echo "No cash swing data changes."
+            exit 0
+          fi
+          git commit -m "Update Aurora cash swing scan"
+          git pull --rebase origin main
+          git push origin HEAD:main
